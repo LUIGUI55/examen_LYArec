@@ -14,9 +14,8 @@ conexiones = {
     'TAMAULIPAS': {'SLP': 350, 'MONTERREY': 280, 'HIDALGO': 450}
 }
 
-def buscar_solucion_BFS(estado_inicial, solucion):
-    # Implementación de BFS con Costo Uniforme (Dijkstra)
-    solucionado = False
+def buscar_solucion_BFS_grafo(grafo, estado_inicial, solucion):
+    # Implementación de BFS / Dijkstra sobre grafo de entrada
     nodos_visitados = []
     nodos_frontera = []
     
@@ -24,48 +23,47 @@ def buscar_solucion_BFS(estado_inicial, solucion):
     nodoInicial.set_costo(0)
     nodos_frontera.append(nodoInicial)
 
-    # Verificar si es el mismo nodo
     if estado_inicial == solucion:
         return nodoInicial
 
     while len(nodos_frontera) != 0:
-        # Ordenar la frontera por el costo acumulado (Comportamiento de Cola de Prioridad)
         nodos_frontera.sort(key=lambda x: x.costo)
         nodo = nodos_frontera.pop(0)
         nodos_visitados.append(nodo)
-        
-        # Si llegamos al nodo objetivo, retornamos
+
         if nodo.get_datos() == solucion:
             return nodo
-            
+
         dato_nodo = nodo.get_datos()
-        
-        if dato_nodo in conexiones:
-            hijos_datos = conexiones[dato_nodo]
+        if dato_nodo in grafo:
+            hijos_datos = grafo[dato_nodo]
         else:
             hijos_datos = {}
-            
+
         for un_hijo, peso in hijos_datos.items():
             hijo = Nodo(un_hijo, padre=nodo)
             costo_acumulado = nodo.costo + peso
             hijo.set_costo(costo_acumulado)
-            
-            # Verificar si ya lo visitamos
+
             if not hijo.en_lista(nodos_visitados):
                 agregado = False
-                # Si ya está en la frontera, actualizar con ruta mas corta si aplica
                 for n in nodos_frontera:
                     if n.get_datos() == un_hijo:
                         if hijo.costo < n.costo:
                             n.set_costo(hijo.costo)
-                            n.padre = nodo
+                            n.set_padre(nodo)
                         agregado = True
                         break
-                
+
                 if not agregado:
                     nodos_frontera.append(hijo)
-                
+
     return None
+
+
+def buscar_solucion_BFS(estado_inicial, solucion):
+    return buscar_solucion_BFS_grafo(conexiones, estado_inicial, solucion)
+
 
 if __name__ == "__main__":
     estado_inicial = 'CDMX'

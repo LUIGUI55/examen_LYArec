@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vuelos_BFS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .node-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .node-row select {
+            flex: 1;
+        }
+
+        .btn-remove {
+            background: rgba(255, 100, 100, 0.2);
+            border: 1px solid rgba(255, 100, 100, 0.4);
+            color: #ffb3b3;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-remove:hover {
+            background: rgba(255, 100, 100, 0.4);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <main class="glass-container">
+        <header>
+            <h1>Vuelos_Secuenciales_BFS</h1>
+        </header>
+
+        <form id="vuelosForm">
+            <div id="nodesContainer">
+                <div class="form-group" id="group-0">
+                    <label>Nodo Inicial (Origen)</label>
+                    <div class="node-row">
+                        <select class="node-select" required>
+                            <option value="" disabled selected>Selecciona origen...</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group" id="group-1">
+                    <label>Nodo Objetivo 1 (Destino / Escala)</label>
+                    <div class="node-row">
+                        <select class="node-select" required>
+                            <option value="" disabled selected>Selecciona destino...</option>
+                            {% for city in cities %}
+                            <option value="{{ city }}">{{ city }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                <button type="button" id="addNodeBtn" class="btn-primary"
+                    style="margin-top: 0; background: rgba(100,200,255,0.1); border: 1px solid rgba(100,200,255,0.3); flex: 1; transition: all 0.3s ease;">+
+                    Agregar Otro Nodo</button>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="margin-top: 0; flex: 2;">Calcular Ruta
+                    Completa</button>
+                <button type="button" id="clearBtnFlask" class="btn-primary"
+                    style="margin-top: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex: 1; transition: all 0.3s ease;">Restaurar</button>
+            </div>
+
+            <div style="margin-top: 10px; text-align: center;">
+                <a href="/" style="color: #a5b4fc; text-decoration: none; font-size: 0.9rem;">&#8592; Volver al Buscador
+                    BFS Normal</a>
+            </div>
+        </form>
+
+        <div id="resultContainer" class="result-container hidden">
+            <h3>Ruta Completa Encontrada</h3>
+            <div id="pathResult" class="path-result"></div>
+        </div>
+
+        <div id="errorContainer" class="error-container hidden">
+            <p id="errorText"></p>
+        </div>
+    </main>
+
+    <!-- Template for adding nodes -->
+    <template id="nodeTemplate">
+        <div class="form-group nodo-agregado" style="animation: fadeUp 0.3s ease forwards;">
+            <label class="node-label">Nodo Objetivo X</label>
+            <div class="node-row">
+                <select class="node-select" required>
+                    <option value="" disabled selected>Selecciona destino...</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+                <button type="button" class="btn-remove" title="Eliminar este nodo">&times;</button>
+            </div>
+        </div>
+    </template>
+
+    <script>
+        let nodeCount = 1; // starts with 0 (origin) and 1 (target 1)
+
+        document.getElementById('addNodeBtn').addEventListener('click', () => {
+            nodeCount++;
+            const container = document.getElementById('nodesContainer');
+            const template = document.getElementById('nodeTemplate');
+            const clone = template.content.cloneNode(true);
+
+            const groupDiv = clone.querySelector('.form-group');
+            groupDiv.id = `group-${nodeCount}`;
+
+            const label = clone.querySelector('.node-label');
+            label.textContent = `Nodo Objetivo ${nodeCount}`;
+
+            const removeBtn = clone.querySelector('.btn-remove');
+            removeBtn.addEventListener('click', function () {
+                groupDiv.remove();
+                renumberNodes();
+            });
+
+            container.appendChild(clone);
+        });
+
+        function renumberNodes() {
+            const groups = document.querySelectorAll('.nodo-agregado');
+            nodeCount = 1;
+            groups.forEach((group) => {
+                nodeCount++;
+                group.id = `group-${nodeCount}`;
+                group.querySelector('.node-label').textContent = `Nodo Objetivo ${nodeCount}`;
+            });
+        }
+
+        document.getElementById('clearBtnFlask').addEventListener('click', () => {
+            document.querySelectorAll('.nodo-agregado').forEach(el => el.remove());
+            document.querySelectorAll('.node-select').forEach(el => el.selectedIndex = 0);
+            nodeCount = 1;
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('errorContainer').classList.add('hidden');
+            document.getElementById('pathResult').innerHTML = '';
+        });
+
+        document.getElementById('vuelosForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect all selected nodes in order
+            const selects = document.querySelectorAll('.node-select');
+            const nodos = Array.from(selects).map(select => select.value);
+
+            if (nodos.includes("")) {
+                alert("Por favor selecciona todas las ciudades.");
+                return;
+            }
+
+            const resultContainer = document.getElementById('resultContainer');
+            const pathResult = document.getElementById('pathResult');
+            const errorContainer = document.getElementById('errorContainer');
+            const errorText = document.getElementById('errorText');
+
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            pathResult.innerHTML = '';
+
+            const submitBtn = document.querySelector('button[type="submit"]');
+            submitBtn.textContent = "Calculando Ruta Completa...";
+
+            try {
+                const response = await fetch('/api/solve_secuencial', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nodos })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultContainer.classList.remove('hidden');
+
+                    const nodesDiv = document.createElement('div');
+                    nodesDiv.style.display = 'flex';
+                    nodesDiv.style.justifyContent = 'center';
+                    nodesDiv.style.flexWrap = 'wrap';
+
+                    data.path.forEach((city, index) => {
+                        const cityNode = document.createElement('div');
+                        cityNode.className = 'city-node';
+                        cityNode.innerHTML = `<span>${index + 1}</span><p>${city}</p>`;
+                        cityNode.style.animationDelay = `${index * 0.15}s`;
+
+                        nodesDiv.appendChild(cityNode);
+
+                        if (index < data.path.length - 1) {
+                            const arrow = document.createElement('div');
+                            arrow.className = 'path-arrow';
+                            arrow.innerHTML = '&#8594;';
+                            arrow.style.animationDelay = `${index * 0.15 + 0.1}s`;
+                            nodesDiv.appendChild(arrow);
+                        }
+                    });
+                    pathResult.appendChild(nodesDiv);
+                } else {
+                    errorContainer.classList.remove('hidden');
+                    errorText.textContent = data.error || 'Ocurrió un error al buscar la ruta secuencial.';
+                }
+            } catch (err) {
+                errorContainer.classList.remove('hidden');
+                errorText.textContent = 'Error de conexión con el servidor.';
+            } finally {
+                submitBtn.textContent = "Calcular Ruta Completa";
+            }
+        });
+    </script>
+</body>
+
+</html>
