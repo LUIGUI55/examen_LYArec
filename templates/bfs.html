@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Rutas BFS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+    <div class="background-shapes">
+        <div class="shape shape-1"></div>
+        <div class="shape shape-2"></div>
+        <div class="shape shape-3"></div>
+    </div>
+
+    <main class="glass-container">
+        <header>
+            <h1>Examen BFS</h1>
+            <p>Encuentra el camino más corto entre ciudades.</p>
+        </header>
+
+        <form id="bfsForm">
+            <div class="form-group">
+                <label for="origen">Ciudad de Origen</label>
+                <select id="origen" name="origen" required>
+                    <option value="" disabled selected>Selecciona origen...</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="destino">Ciudad de Destino</label>
+                <select id="destino" name="destino" required>
+                    <option value="" disabled selected>Selecciona destino...</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; margin-top: 1rem;">
+                <button type="submit" class="btn-primary" style="margin-top: 0;">Buscar Ruta</button>
+                <button type="button" id="clearBtnFlask" class="btn-primary"
+                    style="margin-top: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex: 0.5; transition: all 0.3s ease;">Limpiar</button>
+            </div>
+        </form>
+
+        <div id="resultContainer" class="result-container hidden">
+            <h3>Camino Encontrado</h3>
+            <div id="pathResult" class="path-result"></div>
+        </div>
+
+        <div id="errorContainer" class="error-container hidden">
+            <p id="errorText"></p>
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('clearBtnFlask').addEventListener('click', () => {
+            document.getElementById('origen').selectedIndex = 0;
+            document.getElementById('destino').selectedIndex = 0;
+            document.getElementById('resultContainer').classList.add('hidden');
+            document.getElementById('errorContainer').classList.add('hidden');
+            document.getElementById('pathResult').innerHTML = '';
+        });
+
+        document.getElementById('bfsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const origen = document.getElementById('origen').value;
+            const destino = document.getElementById('destino').value;
+            const resultContainer = document.getElementById('resultContainer');
+            const pathResult = document.getElementById('pathResult');
+            const errorContainer = document.getElementById('errorContainer');
+            const errorText = document.getElementById('errorText');
+
+            // Hide previous results
+            resultContainer.classList.add('hidden');
+            errorContainer.classList.add('hidden');
+            pathResult.innerHTML = '';
+
+            // Basic UI loading feedback
+            document.querySelector('.btn-primary').textContent = "Buscando...";
+
+            try {
+                const response = await fetch('/api/solve', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origen, destino })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultContainer.classList.remove('hidden');
+
+                    const costBadge = document.createElement('div');
+                    costBadge.innerHTML = `<p style="margin-bottom: 1rem; color: #a5b4fc; font-weight: bold; text-align: center;">Peso / Costo Total: <span style="background:var(--primary-color); padding: 5px 10px; border-radius:12px; color:#fff;">${data.cost}</span></p>`;
+                    pathResult.appendChild(costBadge);
+
+                    const nodesDiv = document.createElement('div');
+                    nodesDiv.style.display = 'flex';
+                    nodesDiv.style.justifyContent = 'center';
+                    nodesDiv.style.flexWrap = 'wrap';
+
+                    data.path.forEach((city, index) => {
+                        const cityNode = document.createElement('div');
+                        cityNode.className = 'city-node';
+                        cityNode.innerHTML = `<span>${index + 1}</span><p>${city}</p>`;
+                        cityNode.style.animationDelay = `${index * 0.15}s`;
+
+                        nodesDiv.appendChild(cityNode);
+
+                        if (index < data.path.length - 1) {
+                            const arrow = document.createElement('div');
+                            arrow.className = 'path-arrow';
+                            arrow.innerHTML = '&#8594;';
+                            arrow.style.animationDelay = `${index * 0.15 + 0.1}s`;
+                            nodesDiv.appendChild(arrow);
+                        }
+                    });
+                    pathResult.appendChild(nodesDiv);
+                } else {
+                    errorContainer.classList.remove('hidden');
+                    errorText.textContent = data.error || 'Ocurrió un error al buscar la ruta.';
+                }
+            } catch (err) {
+                errorContainer.classList.remove('hidden');
+                errorText.textContent = 'Error de conexión con el servidor.';
+            } finally {
+                document.querySelector('.btn-primary').textContent = "Buscar Ruta";
+            }
+        });
+    </script>
+</body>
+
+</html>

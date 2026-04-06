@@ -38,22 +38,22 @@ def buscar_solucion_DFS(estado_inicial, solucion):
                 
     return None
 
-    if __name__ == "__main__":
-        estado_inicial = [4, 2, 3, 1]
-        solucion = [1, 2, 3, 4]
-        
-        print(f"Buscando solucion para: {estado_inicial} -> {solucion} usando DFS...")
-        
-        resultado= []
-        nodo_solucion = buscar_solucion_DFS(estado_inicial, solucion)
-        if nodo_solucion:
-            nodo = nodo_solucion
-            while nodo is not None:
-                resultado.append(nodo.get_datos())
-                nodo = nodo.get_padre()
-            resultado.reverse()
-            print(f"Ruta encontrada en {len(resultado)-1} pasos:")
-            for r in resultado:
-                print(r)
-        
-        
+if __name__ == "__main__":
+    estado_inicial = [4, 2, 3, 1]
+    solucion = [1, 2, 3, 4]
+    
+    print(f"Buscando solucion para: {estado_inicial} -> {solucion} usando DFS...")
+    nodo_solucion = buscar_solucion_DFS(estado_inicial, solucion)
+
+    if nodo_solucion:
+        resultado = []
+        nodo = nodo_solucion
+        while nodo is not None: 
+            resultado.append(nodo.get_datos())
+            nodo = nodo.get_padre()
+        resultado.reverse()
+        print(f"Ruta encontrada en {len(resultado)-1} pasos:")
+        for r in resultado:
+            print(r)
+    else:
+        print("No se encontró solución.")

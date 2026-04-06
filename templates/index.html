@@ -4,139 +4,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buscador de Rutas BFS</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <title>Portafolio - Prácticas de Autómatas</title>
+    <!-- Estilos basicos para el menu -->
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --text-color: #f8fafc;
+            --primary: #3b82f6;
+            --secondary: #6366f1;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Inter', system-ui, sans-serif;
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Aqui empieza lo del header */
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: #94a3b8;
+            font-size: 1.1rem;
+        }
+
+        /* Grid para meter las 4 cartas */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            width: 100%;
+            max-width: 900px;
+        }
+
+        /* Cartas del menu */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 25px;
+            text-align: left;
+            transition: transform 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.3rem;
+            color: #f1f5f9;
+        }
+
+        .card p {
+            color: #cbd5e1;
+            margin-bottom: 25px;
+            flex-grow: 1;
+            font-size: 0.95rem;
+        }
+
+        /* Boton simulado dentro de la carta */
+        .card .btn-link {
+            display: block;
+            text-align: center;
+            background: var(--primary);
+            color: white;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            transition: opacity 0.2s;
+        }
+
+        .card:hover .btn-link {
+            opacity: 0.85;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="background-shapes">
-        <div class="shape shape-1"></div>
-        <div class="shape shape-2"></div>
-        <div class="shape shape-3"></div>
+
+    <div class="header">
+        <h1>Prácticas de Autómatas</h1>
+        <p class="subtitle">Recopilación de algoritmos vistos en el semestre (Búsqueda no informada).</p>
     </div>
 
-    <main class="glass-container">
-        <header>
-            <h1>Examen BFS</h1>
-            <p>Encuentra el camino más corto entre ciudades.</p>
-        </header>
+    <div class="grid-container">
+        <!-- Tarjeta de BFS Ciudades -->
+        <a href="/bfs" class="card">
+            <h2>Buscador de Ciudades (BFS)</h2>
+            <p>Implementación básica del algoritmo de búsqueda a lo ancho en un grafo simulando distancias.</p>
+            <div class="btn-link">Ir a la práctica</div>
+        </a>
 
-        <form id="bfsForm">
-            <div class="form-group">
-                <label for="origen">Ciudad de Origen</label>
-                <select id="origen" name="origen" required>
-                    <option value="" disabled selected>Selecciona origen...</option>
-                    {% for city in cities %}
-                    <option value="{{ city }}">{{ city }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <!-- Tarjeta de Vuelos -->
+        <a href="/vuelos" class="card">
+            <h2>Recorrido de Vuelos</h2>
+            <p>Variación de BFS para cruzar múltiples nodos de forma secuencial simulando rutas de vuelos.</p>
+            <div class="btn-link">Ir a la práctica</div>
+        </a>
 
-            <div class="form-group">
-                <label for="destino">Ciudad de Destino</label>
-                <select id="destino" name="destino" required>
-                    <option value="" disabled selected>Selecciona destino...</option>
-                    {% for city in cities %}
-                    <option value="{{ city }}">{{ city }}</option>
-                    {% endfor %}
-                </select>
-            </div>
+        <!-- Puzzle Lineal Normal -->
+        <a href="/puzzle" class="card">
+            <h2>Puzzle Lineal (Front Básico)</h2>
+            <p>Resolución de un array desordenado utilizando una pila (DFS) conectada a un HTML clásico.</p>
+            <div class="btn-link">Ir a la práctica</div>
+        </a>
 
-            <div style="display: flex; gap: 10px; margin-top: 1rem;">
-                <button type="submit" class="btn-primary" style="margin-top: 0;">Buscar Ruta</button>
-                <button type="button" id="clearBtnFlask" class="btn-primary"
-                    style="margin-top: 0; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); flex: 0.5; transition: all 0.3s ease;">Limpiar</button>
-            </div>
-        </form>
+        <!-- Puzzle Lineal Front Mejorado -->
+        <a href="/puzzle-premium" class="card" style="border-color: rgba(99, 102, 241, 0.3);">
+            <h2>Puzzle Lineal Dashboard</h2>
+            <p>Misma implementación de Pila (DFS), conectado a un frontend con Vanilla JS para Netlify.</p>
+            <div class="btn-link" style="background: var(--secondary);">Ir a la práctica</div>
+        </a>
+    </div>
 
-        <div id="resultContainer" class="result-container hidden">
-            <h3>Camino Encontrado</h3>
-            <div id="pathResult" class="path-result"></div>
-        </div>
+    <!-- Footer estilo universitario -->
+    <footer style="margin-top: 50px; text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
+        <p><strong>Proyecto Integrador - 7mo Semestre</strong></p>
+        <p>Materia: Lenguajes y Autómatas</p>
+    </footer>
 
-        <div id="errorContainer" class="error-container hidden">
-            <p id="errorText"></p>
-        </div>
-    </main>
-
-    <script>
-        document.getElementById('clearBtnFlask').addEventListener('click', () => {
-            document.getElementById('origen').selectedIndex = 0;
-            document.getElementById('destino').selectedIndex = 0;
-            document.getElementById('resultContainer').classList.add('hidden');
-            document.getElementById('errorContainer').classList.add('hidden');
-            document.getElementById('pathResult').innerHTML = '';
-        });
-
-        document.getElementById('bfsForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const origen = document.getElementById('origen').value;
-            const destino = document.getElementById('destino').value;
-            const resultContainer = document.getElementById('resultContainer');
-            const pathResult = document.getElementById('pathResult');
-            const errorContainer = document.getElementById('errorContainer');
-            const errorText = document.getElementById('errorText');
-
-            // Hide previous results
-            resultContainer.classList.add('hidden');
-            errorContainer.classList.add('hidden');
-            pathResult.innerHTML = '';
-
-            // Basic UI loading feedback
-            document.querySelector('.btn-primary').textContent = "Buscando...";
-
-            try {
-                const response = await fetch('/api/solve', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ origen, destino })
-                });
-
-                const data = await response.json();
-
-                if (data.success) {
-                    resultContainer.classList.remove('hidden');
-
-                    const costBadge = document.createElement('div');
-                    costBadge.innerHTML = `<p style="margin-bottom: 1rem; color: #a5b4fc; font-weight: bold; text-align: center;">Peso / Costo Total: <span style="background:var(--primary-color); padding: 5px 10px; border-radius:12px; color:#fff;">${data.cost}</span></p>`;
-                    pathResult.appendChild(costBadge);
-
-                    const nodesDiv = document.createElement('div');
-                    nodesDiv.style.display = 'flex';
-                    nodesDiv.style.justifyContent = 'center';
-                    nodesDiv.style.flexWrap = 'wrap';
-
-                    data.path.forEach((city, index) => {
-                        const cityNode = document.createElement('div');
-                        cityNode.className = 'city-node';
-                        cityNode.innerHTML = `<span>${index + 1}</span><p>${city}</p>`;
-                        cityNode.style.animationDelay = `${index * 0.15}s`;
-
-                        nodesDiv.appendChild(cityNode);
-
-                        if (index < data.path.length - 1) {
-                            const arrow = document.createElement('div');
-                            arrow.className = 'path-arrow';
-                            arrow.innerHTML = '&#8594;';
-                            arrow.style.animationDelay = `${index * 0.15 + 0.1}s`;
-                            nodesDiv.appendChild(arrow);
-                        }
-                    });
-                    pathResult.appendChild(nodesDiv);
-                } else {
-                    errorContainer.classList.remove('hidden');
-                    errorText.textContent = data.error || 'Ocurrió un error al buscar la ruta.';
-                }
-            } catch (err) {
-                errorContainer.classList.remove('hidden');
-                errorText.textContent = 'Error de conexión con el servidor.';
-            } finally {
-                document.querySelector('.btn-primary').textContent = "Buscar Ruta";
-            }
-        });
-    </script>
 </body>
 
 </html>

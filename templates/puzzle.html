@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Lineal - Búsqueda en Profundidad (DFS)</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #34495e;
+            --accent-color: #3498db;
+            --bg-color: #f5f6fa;
+            --text-color: #2f3640;
+            --white: #ffffff;
+            --success-color: #27ae60;
+            --error-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: var(--white);
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-top: 5px solid var(--primary-color);
+        }
+
+        h1 {
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 2rem;
+        }
+        
+        p.subtitle {
+            text-align: center;
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            background-color: #ecf0f1;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .input-label {
+            font-weight: 600;
+            width: 150px;
+            color: var(--secondary-color);
+        }
+
+        .array-inputs {
+            display: flex;
+            gap: 10px;
+            flex-grow: 1;
+        }
+
+        .array-inputs input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            text-align: center;
+            font-weight: bold;
+            color: var(--primary-color);
+            transition: border-color 0.2s;
+        }
+
+        .array-inputs input:focus {
+            outline: none;
+            border-color: var(--accent-color);
+        }
+
+        .btn-solve {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin-top: 20px;
+        }
+
+        .btn-solve:hover {
+            background-color: #2980b9;
+        }
+        
+        .btn-solve:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background-color: var(--white);
+            border: 1px solid #e0e6ed;
+            border-radius: 6px;
+            padding: 20px;
+            display: none;
+        }
+        
+        .results-section.active {
+            display: block;
+        }
+        
+        .results-header {
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        #status-msg {
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+        
+        .successMsg { color: var(--success-color); }
+        .errorMsg { color: var(--error-color); }
+
+        .path-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .step-card {
+            display: flex;
+            align-items: center;
+            background-color: #f8f9fa;
+            border-left: 5px solid var(--accent-color);
+            padding: 15px;
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .step-number {
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--secondary-color);
+            min-width: 80px;
+        }
+
+        .step-array {
+            display: flex;
+            gap: 8px;
+        }
+
+        .step-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 45px;
+            height: 45px;
+            background-color: var(--white);
+            border: 2px solid var(--primary-color);
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: var(--primary-color);
+        }
+        
+        /* Flecha decorativa entre los pasos para pantallas grandes */
+        .arrow-down {
+            text-align: center;
+            color: #bdc3c7;
+            font-size: 1.5rem;
+            margin: -5px 0;
+            display: none;
+        }
+
+        @media (max-width: 600px) {
+            .input-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .input-label {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Puzzle Lineal DFS</h1>
+        <p class="subtitle">Resolución utilizando Búsqueda en Profundidad</p>
+
+        <div class="form-section">
+            <form id="puzzleForm">
+                <div class="input-group">
+                    <div class="input-label">Estado Inicial:</div>
+                    <div class="array-inputs" id="initial-inputs">
+                        <input type="number" required value="4" min="1" max="9">
+                        <input type="number" required value="2" min="1" max="9">
+                        <input type="number" required value="3" min="1" max="9">
+                        <input type="number" required value="1" min="1" max="9">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label">Estado Final:</div>
+                    <div class="array-inputs" id="goal-inputs">
+                        <input type="number" required value="1" min="1" max="9">
+                        <input type="number" required value="2" min="1" max="9">
+                        <input type="number" required value="3" min="1" max="9">
+                        <input type="number" required value="4" min="1" max="9">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-solve" id="solveBtn">Resolver Puzzle</button>
+            </form>
+        </div>
+
+        <div class="results-section" id="resultsSection">
+            <div class="results-header">
+                <h2>Resultados</h2>
+                <div id="status-msg"></div>
+            </div>
+            
+            <div class="path-container" id="pathContainer">
+                <!-- Pasos del path se renderizan aquí -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('puzzleForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('solveBtn');
+            const resultsSection = document.getElementById('resultsSection');
+            const statusMsg = document.getElementById('status-msg');
+            const pathContainer = document.getElementById('pathContainer');
+            
+            // Obtener valores
+            const initialInputs = Array.from(document.getElementById('initial-inputs').querySelectorAll('input'));
+            const goalInputs = Array.from(document.getElementById('goal-inputs').querySelectorAll('input'));
+            
+            const estado_inicial = initialInputs.map(input => parseInt(input.value));
+            const solucion = goalInputs.map(input => parseInt(input.value));
+            
+            if (estado_inicial.some(isNaN) || solucion.some(isNaN)) {
+                alert("Por favor inserta todos los números.");
+                return;
+            }
+            
+            // UI State
+            btn.disabled = true;
+            btn.textContent = 'Calculando ruta en profundidad...';
+            resultsSection.classList.add('active');
+            statusMsg.innerHTML = '<span style="color: #f39c12">Calculando...</span>';
+            pathContainer.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/solve_puzzle', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        estado_inicial: estado_inicial, 
+                        solucion: solucion 
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    const pasos = data.path.length - 1;
+                    statusMsg.innerHTML = `<span class="successMsg">¡Solución encontrada en ${pasos} movimientos!</span>`;
+                    
+                    data.path.forEach((state, index) => {
+                        const stepCard = document.createElement('div');
+                        stepCard.className = 'step-card';
+                        
+                        // Añadir etiqueta de estado inicial/final o paso
+                        let title = `Paso ${index}`;
+                        if (index === 0) title = 'Inicial';
+                        if (index === data.path.length - 1) title = 'Final';
+                        
+                        stepCard.innerHTML = `
+                            <div class="step-number">${title}</div>
+                            <div class="step-array">
+                                ${state.map(num => `<div class="step-box">${num}</div>`).join('')}
+                            </div>
+                        `;
+                        pathContainer.appendChild(stepCard);
+                        
+                        // Agregar flecha si no es el último
+                        if (index < data.path.length - 1) {
+                            const arrow = document.createElement('div');
+                            arrow.className = 'arrow-down';
+                            arrow.innerHTML = '↓';
+                            arrow.style.display = 'block';
+                            pathContainer.appendChild(arrow);
+                        }
+                    });
+                } else {
+                    statusMsg.innerHTML = `<span class="errorMsg">${data.error}</span>`;
+                }
+            } catch (error) {
+                statusMsg.innerHTML = `<span class="errorMsg">Error de red o de servidor.</span>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Resolver Puzzle';
+            }
+        });
+    </script>
+</body>
+</html>

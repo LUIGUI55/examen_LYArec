@@ -11,12 +11,16 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/puzzle-premium.css') }}">
 </head>
 
 <body>
     <div class="background-mesh"></div>
     <div class="dashboard-container">
+        
+        <div style="margin-bottom: 20px;">
+            <a href="/" style="color: #64ffda; text-decoration: none; font-size: 0.9rem;">&larr; Volver al Hub Principal</a>
+        </div>
 
         <header>
             <h1>Puzzle Lineal <span>DFS</span></h1>
@@ -53,10 +57,8 @@
                     </svg>
                     Encontrar Solución
                 </button>
-                <button id="clear-btn" class="secondary-btn"
-                    style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <button id="clear-btn" class="secondary-btn" style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 6h18"></path>
                         <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
                         <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
@@ -77,10 +79,12 @@
             </section>
         </main>
 
-
+        <footer>
+            <p>Construido usando Búsqueda en Profundidad (DFS) integrado en Flask.</p>
+        </footer>
     </div>
 
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='js/puzzle-premium.js') }}"></script>
 </body>
 
 </html>
