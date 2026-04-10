@@ -1,6 +1,7 @@
 from flask import Flask, render_template, request, jsonify
 from BFS import buscar_solucion_BFS, buscar_solucion_BFS_grafo, conexiones
 from DFS import buscar_solucion_DFS
+from dfs_rec import buscar_solucion_DFS_rec
 import os
 import Vuelos_BPS
 
@@ -82,6 +83,38 @@ def solve_secuencial():
 @app.route('/puzzle')
 def puzzle():
     return render_template('puzzle.html')
+
+@app.route('/puzzle-recursive')
+def puzzle_recursive():
+    return render_template('puzzle-recursive.html')
+
+@app.route('/api/solve_puzzle_recursive', methods=['POST'])
+def solve_puzzle_recursive():
+    data = request.json
+    estado_inicial = data.get('estado_inicial')
+    solucion = data.get('solucion')
+    
+    if not estado_inicial or not solucion or len(estado_inicial) != 4 or len(solucion) != 4:
+        return jsonify({'error': 'Se requieren arreglos de 4 elementos para origen y meta.', 'success': False}), 400
+    
+    try:
+        estado_inicial = [int(x) for x in estado_inicial]
+        solucion = [int(x) for x in solucion]
+    except ValueError:
+        return jsonify({'error': 'Los elementos deben ser números enteros.', 'success': False}), 400
+        
+    nodo_solucion = buscar_solucion_DFS_rec(estado_inicial, solucion)
+    
+    if nodo_solucion:
+        resultado = []
+        nodo = nodo_solucion
+        while nodo is not None:
+            resultado.append(nodo.get_datos())
+            nodo = nodo.get_padre()
+        resultado.reverse()
+        return jsonify({'path': resultado, 'success': True})
+    else:
+        return jsonify({'error': 'No se encontró solución (o límite de recursión alcanzado).', 'success': False})
 
 @app.route('/puzzle-premium')
 def puzzle_premium():

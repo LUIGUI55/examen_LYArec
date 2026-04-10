@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Puzzle Lineal Recursivo - Premium</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --bg: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --accent: #06b6d4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-align: center;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #818cf8, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        p.description {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 40px;
+        }
+
+        .setup-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .puzzle-input {
+            display: flex;
+            gap: 8px;
+        }
+
+        .puzzle-input input {
+            width: 50px;
+            height: 50px;
+            text-align: center;
+            font-size: 1.25rem;
+            font-weight: bold;
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            transition: all 0.3s;
+        }
+
+        .puzzle-input input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+        }
+
+        .solve-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .solve-btn:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .solve-btn:active {
+            transform: translateY(0);
+        }
+
+        #result-container {
+            margin-top: 40px;
+            display: none;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .path-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .step-number {
+            background: var(--primary);
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        .step-data {
+            font-family: monospace;
+            font-size: 1.2rem;
+            letter-spacing: 4px;
+            color: var(--accent);
+        }
+
+        .back-link {
+            margin-top: 30px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .back-link:hover {
+            color: white;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .loader {
+            display: none;
+            width: 24px;
+            height: 24px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Puzzle Lineal Recursivo</h1>
+        <p class="description">Algoritmo de Búsqueda en Profundidad (DFS) implementado de forma recursiva.</p>
+
+        <div class="setup-section">
+            <div class="input-group">
+                <label>Estado Inicial</label>
+                <div class="puzzle-input" id="start-state">
+                    <input type="text" maxlength="1" value="4">
+                    <input type="text" maxlength="1" value="2">
+                    <input type="text" maxlength="1" value="3">
+                    <input type="text" maxlength="1" value="1">
+                </div>
+            </div>
+            <div class="input-group">
+                <label>Estado Objetivo</label>
+                <div class="puzzle-input" id="end-state">
+                    <input type="text" maxlength="1" value="1">
+                    <input type="text" maxlength="1" value="2">
+                    <input type="text" maxlength="1" value="3">
+                    <input type="text" maxlength="1" value="4">
+                </div>
+            </div>
+        </div>
+
+        <button class="solve-btn" id="solve-btn">
+            <span id="btn-text">Resolver Puzzle</span>
+            <div class="loader" id="loader"></div>
+        </button>
+
+        <div id="result-container">
+            <h2>Solución Encontrada</h2>
+            <div class="path-list" id="path-list">
+                <!-- Pasos se insertarán aquí -->
+            </div>
+        </div>
+    </div>
+
+    <a href="/" class="back-link">← Volver al inicio</a>
+
+    <script>
+        document.getElementById('solve-btn').addEventListener('click', async () => {
+            const startInputs = document.querySelectorAll('#start-state input');
+            const endInputs = document.querySelectorAll('#end-state input');
+            
+            const estado_inicial = Array.from(startInputs).map(i => i.value);
+            const solucion = Array.from(endInputs).map(i => i.value);
+
+            const btnText = document.getElementById('btn-text');
+            const loader = document.getElementById('loader');
+            const resultContainer = document.getElementById('result-container');
+            const pathList = document.getElementById('path-list');
+
+            // UI Feedback
+            btnText.style.display = 'none';
+            loader.style.display = 'block';
+            resultContainer.style.display = 'none';
+            pathList.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/solve_puzzle_recursive', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ estado_inicial, solucion })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    resultContainer.style.display = 'block';
+                    data.path.forEach((step, index) => {
+                        const stepDiv = document.createElement('div');
+                        stepDiv.className = 'step-card';
+                        stepDiv.style.animationDelay = `${index * 0.1}s`;
+                        stepDiv.innerHTML = `
+                            <div class="step-number">${index}</div>
+                            <div class="step-data">[ ${step.join(', ')} ]</div>
+                        `;
+                        pathList.appendChild(stepDiv);
+                    });
+                    
+                    Swal.fire({
+                        title: '¡Resuelto!',
+                        text: `Se encontró la solución en ${data.path.length - 1} pasos.`,
+                        icon: 'success',
+                        background: '#1e293b',
+                        color: '#f8fafc',
+                        confirmButtonColor: '#8b5cf6'
+                    });
+                } else {
+                    Swal.fire({
+                        title: 'Sin solución',
+                        text: data.error,
+                        icon: 'error',
+                        background: '#1e293b',
+                        color: '#f8fafc',
+                        confirmButtonColor: '#ef4444'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Hubo un problema al conectar con el servidor.',
+                    icon: 'error',
+                    background: '#1e293b',
+                    color: '#f8fafc'
+                });
+            } finally {
+                btnText.style.display = 'block';
+                loader.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

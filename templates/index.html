@@ -4,8 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portafolio - Prácticas de Autómatas</title>
-    <!-- Estilos basicos para el menu -->
+    <title>Portafolio</title>
     <style>
         :root {
             --bg-color: #0f172a;
@@ -28,7 +27,6 @@
             min-height: 100vh;
         }
 
-        /* Aqui empieza lo del header */
         .header {
             text-align: center;
             margin-bottom: 40px;
@@ -47,7 +45,6 @@
             font-size: 1.1rem;
         }
 
-        /* Grid para meter las 4 cartas */
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -56,7 +53,6 @@
             max-width: 900px;
         }
 
-        /* Cartas del menu */
         .card {
             background: var(--card-bg);
             border: 1px solid var(--border);
@@ -88,7 +84,6 @@
             font-size: 0.95rem;
         }
 
-        /* Boton simulado dentro de la carta */
         .card .btn-link {
             display: block;
             text-align: center;
@@ -115,36 +110,33 @@
     </div>
 
     <div class="grid-container">
-        <!-- Tarjeta de BFS Ciudades -->
         <a href="/bfs" class="card">
             <h2>Buscador de Ciudades (BFS)</h2>
-            <p>Implementación básica del algoritmo de búsqueda a lo ancho en un grafo simulando distancias.</p>
             <div class="btn-link">Ir a la práctica</div>
         </a>
 
-        <!-- Tarjeta de Vuelos -->
         <a href="/vuelos" class="card">
             <h2>Recorrido de Vuelos</h2>
-            <p>Variación de BFS para cruzar múltiples nodos de forma secuencial simulando rutas de vuelos.</p>
             <div class="btn-link">Ir a la práctica</div>
         </a>
 
-        <!-- Puzzle Lineal Normal -->
         <a href="/puzzle" class="card">
             <h2>Puzzle Lineal (Front Básico)</h2>
-            <p>Resolución de un array desordenado utilizando una pila (DFS) conectada a un HTML clásico.</p>
             <div class="btn-link">Ir a la práctica</div>
         </a>
 
-        <!-- Puzzle Lineal Front Mejorado -->
         <a href="/puzzle-premium" class="card" style="border-color: rgba(99, 102, 241, 0.3);">
             <h2>Puzzle Lineal Dashboard</h2>
-            <p>Misma implementación de Pila (DFS), conectado a un frontend con Vanilla JS para Netlify.</p>
             <div class="btn-link" style="background: var(--secondary);">Ir a la práctica</div>
+        </a>
+
+        <a href="/puzzle-recursive" class="card" style="border-color: rgba(236, 72, 153, 0.3);">
+            <div style="position: absolute; top: 10px; right: 20px; font-size: 0.7rem; background: #ec4899; padding: 2px 8px; border-radius: 10px; font-weight: bold;">NUEVO</div>
+            <h2>Puzzle Lineal (Recursivo)</h2>
+            <div class="btn-link" style="background: linear-gradient(to right, #8b5cf6, #ec4899);">Ir a la práctica</div>
         </a>
     </div>
 
-    <!-- Footer estilo universitario -->
     <footer style="margin-top: 50px; text-align: center; color: #64748b; font-size: 0.9rem; margin-bottom: 20px;">
         <p><strong>Proyecto Integrador - 7mo Semestre</strong></p>
         <p>Materia: Lenguajes y Autómatas</p>
