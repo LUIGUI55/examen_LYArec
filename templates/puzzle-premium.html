@@ -49,7 +49,7 @@
                 </div>
             </section>
 
-            <div class="action-bar" style="display: flex; gap: 10px;">
+            <div class="action-bar" style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 10px; width: 100%;">
                 <button id="solve-btn" class="primary-btn">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -57,13 +57,11 @@
                     </svg>
                     Encontrar Solución
                 </button>
-                <button id="clear-btn" class="secondary-btn" style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s ease;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M3 6h18"></path>
-                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                    </svg>
-                    Limpiar
+                <button id="borrar-ruta-btn" class="secondary-btn" style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; font-size: 0.8rem;">
+                    BORRAR RUTA
+                </button>
+                <button id="nueva-ruta-btn" class="secondary-btn" style="padding: 1rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; border-radius: 12px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.3s ease; font-size: 0.8rem;">
+                    NUEVA RUTA
                 </button>
             </div>
 

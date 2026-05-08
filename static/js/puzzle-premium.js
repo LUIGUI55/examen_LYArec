@@ -100,14 +100,21 @@ function getDiffIndices(arr1, arr2) {
 // UI Binding
 document.addEventListener('DOMContentLoaded', () => {
     const solveBtn = document.getElementById('solve-btn');
-    const clearBtn = document.getElementById('clear-btn');
+    const borrarRutaBtn = document.getElementById('borrar-ruta-btn');
+    const nuevaRutaBtn = document.getElementById('nueva-ruta-btn');
     const initialInput = document.getElementById('initial-state');
     const goalInput = document.getElementById('goal-state');
     const alertBox = document.getElementById('alert-message');
     const pathContainer = document.getElementById('path-container');
     const stepCountBadg = document.getElementById('step-count');
 
-    clearBtn.addEventListener('click', () => {
+    borrarRutaBtn.addEventListener('click', () => {
+        alertBox.className = 'alert hidden';
+        pathContainer.innerHTML = '<div class="placeholder-text">Presiona "Encontrar Solución" para comenzar...</div>';
+        stepCountBadg.textContent = '0 Pasos';
+    });
+
+    nuevaRutaBtn.addEventListener('click', () => {
         alertBox.className = 'alert hidden';
         pathContainer.innerHTML = '<div class="placeholder-text">Presiona "Encontrar Solución" para comenzar...</div>';
         stepCountBadg.textContent = '0 Pasos';

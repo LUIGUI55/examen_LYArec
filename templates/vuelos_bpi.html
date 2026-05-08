@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vuelos IDDFS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --glass-bg: rgba(30, 41, 59, 0.7);
+            --primary: #10b981;
+            --accent: #3b82f6;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .glass-container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .btn-solve {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #10b981, #3b82f6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-solve:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-secondary {
+            flex: 1;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #94a3b8;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.8rem;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(16, 185, 129, 0.1);
+            border-left: 4px solid #10b981;
+            border-radius: 4px;
+        }
+
+        .path-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .city-tag {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .arrow {
+            color: #64748b;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-container">
+        <h1>Búsqueda Iterativa (Flights)</h1>
+
+        <div class="form-group">
+            <label>Origen</label>
+            <select id="origen">
+                {% for city in cities %}
+                <option value="{{ city }}">{{ city }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Destino</label>
+            <select id="destino">
+                {% for city in cities %}
+                <option value="{{ city }}">{{ city }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button class="btn-solve" id="solveBtn">Calcular Ruta</button>
+
+        <div class="btn-container">
+            <button class="btn-secondary" id="clearRouteBtn">BORRAR RUTA</button>
+            <button class="btn-secondary" id="newRouteBtn">NUEVA RUTA</button>
+        </div>
+
+        <div id="result" class="result-container hidden">
+            <div style="font-weight: bold; margin-bottom: 10px;">Ruta encontrada:</div>
+            <div id="pathResult" class="path-display"></div>
+        </div>
+
+        <div id="error" class="hidden" style="color: #ef4444; margin-top: 20px; text-align: center; font-size: 0.9rem;">
+        </div>
+
+        <a href="/" class="back-link">← Volver al Dashboard</a>
+    </div>
+
+    <script>
+        document.getElementById('solveBtn').onclick = async () => {
+            const origen = document.getElementById('origen').value;
+            const destino = document.getElementById('destino').value;
+            const resDiv = document.getElementById('result');
+            const errDiv = document.getElementById('error');
+            const pathDiv = document.getElementById('pathResult');
+
+            resDiv.classList.add('hidden');
+            errDiv.classList.add('hidden');
+            pathDiv.innerHTML = '';
+
+            try {
+                const response = await fetch('/api/solve_vuelos_bpi', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ origen, destino })
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    resDiv.classList.remove('hidden');
+                    data.path.forEach((city, i) => {
+                        const tag = document.createElement('span');
+                        tag.className = 'city-tag';
+                        tag.textContent = city;
+                        pathDiv.appendChild(tag);
+                        if (i < data.path.length - 1) {
+                            const arrow = document.createElement('span');
+                            arrow.className = 'arrow';
+                            arrow.innerHTML = '→';
+                            pathDiv.appendChild(arrow);
+                        }
+                    });
+                } else {
+                    errDiv.innerText = data.error;
+                    errDiv.classList.remove('hidden');
+                }
+            } catch (e) {
+                errDiv.innerText = "Error de conexión";
+                errDiv.classList.remove('hidden');
+            }
+        };
+
+        // Función para Borrar Ruta (solo oculta resultados)
+        document.getElementById('clearRouteBtn').onclick = () => {
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+        };
+
+        // Función para Nueva Ruta (reinicia todo)
+        document.getElementById('newRouteBtn').onclick = () => {
+            document.getElementById('origen').selectedIndex = 0;
+            document.getElementById('destino').selectedIndex = 0;
+            document.getElementById('result').classList.add('hidden');
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('pathResult').innerHTML = '';
+        };
+    </script>
+</body>
+
+</html>

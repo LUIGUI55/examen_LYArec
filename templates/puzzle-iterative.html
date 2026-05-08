@@ -1,18 +1,19 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Puzzle Lineal Recursivo - Premium</title>
+    <title>Puzzle Lineal Iterativo</title>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #8b5cf6;
-            --secondary: #ec4899;
+            --primary: #10b981;
+            --secondary: #3b82f6;
             --bg: #0f172a;
             --card-bg: rgba(30, 41, 59, 0.7);
-            --accent: #06b6d4;
+            --accent: #34d399;
         }
 
         * {
@@ -23,7 +24,7 @@
         }
 
         body {
-            background: radial-gradient(circle at top left, #1e1b4b, #0f172a);
+            background: radial-gradient(circle at top left, #064e3b, #0f172a);
             color: #f8fafc;
             min-height: 100vh;
             display: flex;
@@ -48,7 +49,7 @@
             font-weight: 800;
             text-align: center;
             margin-bottom: 10px;
-            background: linear-gradient(to right, #818cf8, #f472b6);
+            background: linear-gradient(to right, #10b981, #3b82f6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
@@ -101,7 +102,7 @@
         .puzzle-input input:focus {
             outline: none;
             border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
         }
 
         .solve-btn {
@@ -128,13 +129,13 @@
         }
 
         .btn-container {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
+            display: flex;
             gap: 15px;
             margin-top: 20px;
         }
 
         .btn-secondary {
+            flex: 1;
             padding: 14px;
             background: rgba(255, 255, 255, 0.05);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -217,15 +218,22 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .loader {
             display: none;
             width: 24px;
             height: 24px;
-            border: 3px solid rgba(255,255,255,0.3);
+            border: 3px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             border-top-color: white;
             animation: spin 1s linear infinite;
@@ -233,15 +241,18 @@
         }
 
         @keyframes spin {
-            to { transform: rotate(360deg); }
+            to {
+                transform: rotate(360deg);
+            }
         }
     </style>
 </head>
+
 <body>
 
     <div class="container">
-        <h1>Puzzle Lineal Recursivo</h1>
-        <p class="description">Algoritmo de Búsqueda en Profundidad (DFS) implementado de forma recursiva.</p>
+        <h1>Puzzle Lineal Iterativo</h1>
+        <p class="description">Búsqueda en Profundidad (DFS) implementado con una pila iterativa.</p>
 
         <div class="setup-section">
             <div class="input-group">
@@ -265,7 +276,7 @@
         </div>
 
         <button class="solve-btn" id="solve-btn">
-            <span id="btn-text">Resolver Puzzle</span>
+            <span id="btn-text">Resolver Puzzle (Iterativo)</span>
             <div class="loader" id="loader"></div>
         </button>
 
@@ -288,7 +299,7 @@
         document.getElementById('solve-btn').addEventListener('click', async () => {
             const startInputs = document.querySelectorAll('#start-state input');
             const endInputs = document.querySelectorAll('#end-state input');
-            
+
             const estado_inicial = Array.from(startInputs).map(i => i.value);
             const solucion = Array.from(endInputs).map(i => i.value);
 
@@ -304,7 +315,7 @@
             pathList.innerHTML = '';
 
             try {
-                const response = await fetch('/api/solve_puzzle_recursive', {
+                const response = await fetch('/api/solve_puzzle_iterative', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ estado_inicial, solucion })
@@ -324,14 +335,14 @@
                         `;
                         pathList.appendChild(stepDiv);
                     });
-                    
+
                     Swal.fire({
                         title: '¡Resuelto!',
                         text: `Se encontró la solución en ${data.path.length - 1} pasos.`,
                         icon: 'success',
                         background: '#1e293b',
                         color: '#f8fafc',
-                        confirmButtonColor: '#8b5cf6'
+                        confirmButtonColor: '#10b981'
                     });
                 } else {
                     Swal.fire({
@@ -364,18 +375,21 @@
 
         // Función para Nueva Ruta
         document.getElementById('new-route-btn').onclick = () => {
-            const defaults = ['4', '2', '3', '1'];
-            const goalDefaults = ['1', '2', '3', '4'];
+            const defaults = {
+                start: ['4', '2', '3', '1'],
+                end: ['1', '2', '3', '4']
+            };
             
             const startInputs = document.querySelectorAll('#start-state input');
             const endInputs = document.querySelectorAll('#end-state input');
             
-            startInputs.forEach((input, i) => input.value = defaults[i]);
-            endInputs.forEach((input, i) => input.value = goalDefaults[i]);
+            startInputs.forEach((input, i) => input.value = defaults.start[i]);
+            endInputs.forEach((input, i) => input.value = defaults.end[i]);
             
             document.getElementById('result-container').style.display = 'none';
             document.getElementById('path-list').innerHTML = '';
         };
     </script>
 </body>
+
 </html>
