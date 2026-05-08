@@ -4,279 +4,222 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Comparador de Algoritmos | Puzzle Lineal</title>
-    <meta name="description" content="Ejecuta y compara 3 algoritmos de búsqueda (Heurístico, Iterativo, Recursivo) en paralelo para resolver el puzzle lineal.">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-        :root {
-            --bg: #0a0e1a;
-            --surface: rgba(15, 23, 42, 0.85);
-            --glass: rgba(30, 41, 59, 0.55);
-            --border: rgba(255,255,255,0.08);
-            --text: #f1f5f9;
-            --muted: #94a3b8;
-            --accent-h: 265;
-            --accent-r: #a78bfa;
-            --accent-i: #34d399;
-            --accent-rc: #f472b6;
-            --danger: #ef4444;
-        }
-
         body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: var(--bg);
-            color: var(--text);
+            background: #0f172a;
+            color: #f1f5f9;
             min-height: 100vh;
-            overflow-x: hidden;
-        }
-
-        /* ── Animated background ── */
-        .bg-anim {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none;
-            background:
-                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(99,102,241,.12) 0%, transparent 70%),
-                radial-gradient(ellipse 500px 500px at 80% 70%, rgba(167,139,250,.10) 0%, transparent 70%),
-                radial-gradient(ellipse 400px 300px at 50% 90%, rgba(52,211,153,.08) 0%, transparent 70%);
-            animation: bgPulse 8s ease-in-out infinite alternate;
-        }
-        @keyframes bgPulse {
-            0% { opacity: .6; }
-            100% { opacity: 1; }
-        }
-
-        .container {
-            position: relative; z-index: 1;
-            max-width: 1200px; margin: 0 auto;
             padding: 30px 20px 60px;
         }
 
-        /* ── Header ── */
-        .back-btn {
-            display: inline-flex; align-items: center; gap: 6px;
-            color: var(--muted); text-decoration: none; font-size: .85rem;
-            margin-bottom: 20px; transition: color .2s;
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
         }
-        .back-btn:hover { color: var(--text); }
+
+        .back-btn {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: .85rem;
+            margin-bottom: 20px;
+            display: inline-block;
+        }
+        .back-btn:hover { color: #f1f5f9; }
 
         .hero {
-            text-align: center; margin-bottom: 36px;
+            text-align: center;
+            margin-bottom: 30px;
         }
         .hero h1 {
-            font-size: 2.2rem; font-weight: 800;
-            background: linear-gradient(135deg, #818cf8, #a78bfa, #c084fc);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #60a5fa, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 6px;
         }
-        .hero p { color: var(--muted); font-size: 1rem; max-width: 600px; margin: 0 auto; }
+        .hero p { color: #94a3b8; font-size: .95rem; }
 
         .badge-row {
-            display: flex; justify-content: center; gap: 10px; margin-top: 14px; flex-wrap: wrap;
+            display: flex; justify-content: center; gap: 8px; margin-top: 12px;
         }
         .badge {
-            font-size: .7rem; font-weight: 600; padding: 4px 12px;
-            border-radius: 20px; letter-spacing: .5px; text-transform: uppercase;
+            font-size: .7rem; font-weight: 600; padding: 3px 10px;
+            border-radius: 12px; text-transform: uppercase;
         }
-        .badge-h { background: rgba(167,139,250,.15); color: var(--accent-r); border: 1px solid rgba(167,139,250,.25); }
-        .badge-i { background: rgba(52,211,153,.15); color: var(--accent-i); border: 1px solid rgba(52,211,153,.25); }
-        .badge-rc { background: rgba(244,114,182,.15); color: var(--accent-rc); border: 1px solid rgba(244,114,182,.25); }
+        .badge-h { background: rgba(167,139,250,.15); color: #a78bfa; }
+        .badge-i { background: rgba(52,211,153,.15); color: #34d399; }
+        .badge-rc { background: rgba(244,114,182,.15); color: #f472b6; }
 
-        /* ── Input panel ── */
+        /* Input Panel */
         .input-panel {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px; padding: 28px;
-            backdrop-filter: blur(16px);
-            margin-bottom: 32px;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 28px;
         }
         .input-panel h2 {
-            font-size: 1rem; font-weight: 600; margin-bottom: 18px; color: var(--muted);
-            text-transform: uppercase; letter-spacing: 1px; font-size: .8rem;
+            font-size: .8rem; color: #94a3b8; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 14px;
         }
 
         .puzzle-inputs {
-            display: flex; gap: 24px; align-items: flex-end; flex-wrap: wrap;
+            display: flex; gap: 20px; align-items: flex-end; flex-wrap: wrap;
         }
-        .input-group { flex: 1; min-width: 200px; }
+        .input-group { flex: 1; min-width: 180px; }
         .input-group label {
-            display: block; font-size: .8rem; color: var(--muted); margin-bottom: 8px; font-weight: 500;
+            display: block; font-size: .8rem; color: #94a3b8; margin-bottom: 6px;
         }
-        .slots {
-            display: flex; gap: 8px;
-        }
+        .slots { display: flex; gap: 6px; }
         .slots input {
-            width: 56px; height: 56px; text-align: center;
-            border: 2px solid var(--border); border-radius: 12px;
-            background: rgba(15,23,42,.6); color: var(--text);
-            font-size: 1.3rem; font-weight: 700; font-family: inherit;
-            transition: border-color .2s, box-shadow .2s;
+            width: 50px; height: 50px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;
+            background: rgba(15,23,42,.6); color: #f1f5f9;
+            font-size: 1.2rem; font-weight: 700; font-family: inherit;
         }
         .slots input:focus {
-            outline: none; border-color: var(--accent-r);
-            box-shadow: 0 0 0 3px rgba(167,139,250,.2);
+            outline: none; border-color: #6366f1;
         }
-        .btn-actions { display: flex; gap: 10px; align-items: flex-end; }
 
+        .btn-actions { display: flex; gap: 8px; align-items: flex-end; }
         .btn {
-            height: 56px; padding: 0 28px; border: none; border-radius: 12px;
-            font-family: inherit; font-weight: 700; font-size: .9rem;
-            cursor: pointer; transition: all .25s; display: inline-flex;
-            align-items: center; gap: 8px; white-space: nowrap;
+            height: 50px; padding: 0 24px; border: none; border-radius: 8px;
+            font-family: inherit; font-weight: 600; font-size: .9rem;
+            cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
         }
         .btn-primary {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            color: #fff; box-shadow: 0 4px 20px rgba(99,102,241,.3);
+            background: #6366f1; color: #fff;
         }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(99,102,241,.45); }
-        .btn-primary:active { transform: translateY(0); }
-        .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
+        .btn-primary:hover { background: #4f46e5; }
+        .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
         .btn-ghost {
-            background: rgba(255,255,255,.06); color: var(--muted);
-            border: 1px solid var(--border);
+            background: rgba(255,255,255,0.06); color: #94a3b8;
+            border: 1px solid rgba(255,255,255,0.08);
         }
-        .btn-ghost:hover { background: rgba(255,255,255,.1); color: var(--text); }
+        .btn-ghost:hover { background: rgba(255,255,255,0.1); color: #f1f5f9; }
 
-        /* ── Loader ── */
-        .loader-overlay {
-            display: none; text-align: center; padding: 60px 20px;
-        }
+        /* Loader */
+        .loader-overlay { display: none; text-align: center; padding: 40px; }
         .loader-overlay.active { display: block; }
         .spinner {
-            width: 48px; height: 48px; border: 4px solid var(--border);
-            border-top-color: var(--accent-r); border-radius: 50%;
-            animation: spin .8s linear infinite; margin: 0 auto 16px;
+            width: 36px; height: 36px; border: 3px solid rgba(255,255,255,0.1);
+            border-top-color: #6366f1; border-radius: 50%;
+            animation: spin .7s linear infinite; margin: 0 auto 12px;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
-        .loader-overlay p { color: var(--muted); font-size: .9rem; }
+        .loader-overlay p { color: #94a3b8; font-size: .85rem; }
 
-        /* ── Results grid ── */
+        /* Results */
         .results-section { display: none; }
         .results-section.active { display: block; }
 
         .total-time {
-            text-align: center; margin-bottom: 24px;
-            font-size: .85rem; color: var(--muted);
+            text-align: center; margin-bottom: 20px;
+            font-size: .85rem; color: #94a3b8;
         }
-        .total-time strong { color: var(--text); font-size: 1rem; }
+        .total-time strong { color: #f1f5f9; }
+
+        .winner-banner {
+            display: none; text-align: center; padding: 16px;
+            background: rgba(250,204,21,.08);
+            border: 1px solid rgba(250,204,21,.15); border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        .winner-banner.active { display: block; }
+        .winner-banner h3 { color: #facc15; font-size: 1rem; margin-bottom: 2px; }
+        .winner-banner p { color: #94a3b8; font-size: .8rem; }
 
         .results-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 16px;
         }
 
         .result-card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: 16px; padding: 24px;
-            backdrop-filter: blur(16px);
-            animation: cardIn .5s ease both;
-            position: relative; overflow: hidden;
+            background: rgba(30, 41, 59, 0.7);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px; padding: 20px;
+            border-top: 3px solid #64748b;
         }
-        .result-card::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
-        }
-        .result-card.heur::before { background: linear-gradient(90deg, #a78bfa, #6366f1); }
-        .result-card.iter::before { background: linear-gradient(90deg, #34d399, #10b981); }
-        .result-card.recur::before { background: linear-gradient(90deg, #f472b6, #ec4899); }
-        .result-card:nth-child(1) { animation-delay: .05s; }
-        .result-card:nth-child(2) { animation-delay: .15s; }
-        .result-card:nth-child(3) { animation-delay: .25s; }
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .result-card.heur { border-top-color: #a78bfa; }
+        .result-card.iter { border-top-color: #34d399; }
+        .result-card.recur { border-top-color: #f472b6; }
 
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-        .card-header h3 { font-size: 1rem; font-weight: 700; }
-        .card-header .tag {
-            font-size: .65rem; font-weight: 700; padding: 3px 10px;
-            border-radius: 20px; text-transform: uppercase; letter-spacing: .5px;
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 14px;
+        }
+        .card-header h3 { font-size: .95rem; font-weight: 600; }
+        .tag {
+            font-size: .65rem; font-weight: 600; padding: 2px 8px;
+            border-radius: 10px; text-transform: uppercase;
         }
         .tag-ok { background: rgba(52,211,153,.15); color: #34d399; }
         .tag-fail { background: rgba(239,68,68,.15); color: #ef4444; }
-        .tag-best { background: rgba(250,204,21,.2); color: #facc15; }
+        .tag-best { background: rgba(250,204,21,.15); color: #facc15; }
 
-        .stats-row {
-            display: flex; gap: 16px; margin-bottom: 18px;
-        }
+        .stats-row { display: flex; gap: 12px; margin-bottom: 14px; }
         .stat {
-            flex: 1; background: rgba(255,255,255,.04);
-            border-radius: 10px; padding: 12px; text-align: center;
+            flex: 1; background: rgba(255,255,255,0.03);
+            border-radius: 8px; padding: 10px; text-align: center;
         }
-        .stat-value { font-size: 1.4rem; font-weight: 800; }
-        .stat-label { font-size: .7rem; color: var(--muted); margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+        .stat-value { font-size: 1.3rem; font-weight: 700; }
+        .stat-label { font-size: .65rem; color: #94a3b8; margin-top: 2px; text-transform: uppercase; }
+        .heur .stat-value { color: #a78bfa; }
+        .iter .stat-value { color: #34d399; }
+        .recur .stat-value { color: #f472b6; }
 
-        .heur .stat-value { color: var(--accent-r); }
-        .iter .stat-value { color: var(--accent-i); }
-        .recur .stat-value { color: var(--accent-rc); }
-
-        /* ── Steps visualization ── */
         .steps-title {
-            font-size: .75rem; color: var(--muted); text-transform: uppercase;
-            letter-spacing: .5px; margin-bottom: 10px; font-weight: 600;
+            font-size: .7rem; color: #94a3b8; text-transform: uppercase;
+            letter-spacing: .5px; margin-bottom: 8px;
         }
         .steps-list {
-            max-height: 260px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px;
-            padding-right: 6px;
+            max-height: 240px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 4px;
         }
         .steps-list::-webkit-scrollbar { width: 4px; }
         .steps-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,.1); border-radius: 2px; }
 
         .step-item {
-            display: flex; align-items: center; gap: 10px;
-            padding: 8px 12px; background: rgba(255,255,255,.03);
-            border-radius: 8px; font-size: .85rem;
-            animation: stepFade .3s ease both;
+            display: flex; align-items: center; gap: 8px;
+            padding: 6px 10px; background: rgba(255,255,255,.03);
+            border-radius: 6px; font-size: .8rem;
         }
-        .step-item:last-child { background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.2); }
+        .step-item:last-child {
+            background: rgba(52,211,153,.08); border: 1px solid rgba(52,211,153,.15);
+        }
         .step-num {
-            width: 24px; height: 24px; border-radius: 50%;
-            background: rgba(255,255,255,.08); display: flex;
+            width: 22px; height: 22px; border-radius: 50%;
+            background: rgba(255,255,255,.06); display: flex;
             align-items: center; justify-content: center;
-            font-size: .7rem; font-weight: 700; color: var(--muted); flex-shrink: 0;
+            font-size: .65rem; font-weight: 600; color: #94a3b8; flex-shrink: 0;
         }
-        .step-item:last-child .step-num { background: rgba(52,211,153,.2); color: #34d399; }
-        .step-state { font-family: 'Inter', monospace; font-weight: 600; letter-spacing: 1px; }
-        @keyframes stepFade {
-            from { opacity: 0; transform: translateX(-8px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
+        .step-item:last-child .step-num { background: rgba(52,211,153,.15); color: #34d399; }
+        .step-state { font-family: monospace; font-weight: 600; letter-spacing: 1px; }
 
         .error-msg {
-            text-align: center; padding: 30px; color: var(--danger);
-            font-size: .9rem;
+            text-align: center; padding: 20px; color: #ef4444; font-size: .85rem;
         }
-
-        /* ── Winner banner ── */
-        .winner-banner {
-            display: none; text-align: center; padding: 20px;
-            background: linear-gradient(135deg, rgba(250,204,21,.08), rgba(251,191,36,.04));
-            border: 1px solid rgba(250,204,21,.15); border-radius: 14px;
-            margin-bottom: 24px;
-        }
-        .winner-banner.active { display: block; animation: cardIn .5s ease both; }
-        .winner-banner .trophy { font-size: 2rem; margin-bottom: 6px; }
-        .winner-banner h3 { font-size: 1.1rem; color: #facc15; margin-bottom: 4px; }
-        .winner-banner p { color: var(--muted); font-size: .85rem; }
 
         @media (max-width: 700px) {
-            .hero h1 { font-size: 1.6rem; }
-            .puzzle-inputs { flex-direction: column; gap: 16px; }
-            .slots input { width: 48px; height: 48px; font-size: 1.1rem; }
+            .hero h1 { font-size: 1.4rem; }
+            .puzzle-inputs { flex-direction: column; gap: 12px; }
             .results-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-anim"></div>
     <div class="container">
         <a href="/" class="back-btn">← Volver al inicio</a>
 
         <div class="hero">
-            <h1>⚡ Comparador Paralelo</h1>
-            <p>Ejecuta 3 algoritmos de búsqueda <strong>al mismo tiempo</strong> y compara rendimiento, pasos y tiempos de ejecución.</p>
+            <h1>Comparador Paralelo</h1>
+            <p>Ejecuta 3 algoritmos al mismo tiempo y compara pasos y tiempos.</p>
             <div class="badge-row">
                 <span class="badge badge-h">Heurístico</span>
                 <span class="badge badge-i">Iterativo</span>
@@ -284,13 +227,12 @@
             </div>
         </div>
 
-        <!-- Input Panel -->
-        <div class="input-panel" id="inputPanel">
+        <div class="input-panel">
             <h2>Configurar Puzzle</h2>
             <div class="puzzle-inputs">
                 <div class="input-group">
                     <label>Estado Inicial</label>
-                    <div class="slots" id="slotsInicial">
+                    <div class="slots">
                         <input type="number" min="1" max="9" value="4" id="i0">
                         <input type="number" min="1" max="9" value="2" id="i1">
                         <input type="number" min="1" max="9" value="3" id="i2">
@@ -299,7 +241,7 @@
                 </div>
                 <div class="input-group">
                     <label>Estado Meta</label>
-                    <div class="slots" id="slotsMeta">
+                    <div class="slots">
                         <input type="number" min="1" max="9" value="1" id="m0">
                         <input type="number" min="1" max="9" value="2" id="m1">
                         <input type="number" min="1" max="9" value="3" id="m2">
@@ -307,29 +249,24 @@
                     </div>
                 </div>
                 <div class="btn-actions">
-                    <button class="btn btn-primary" id="btnSolve" onclick="solvePuzzle()">
-                        <span id="btnText">🚀 Ejecutar</span>
-                    </button>
+                    <button class="btn btn-primary" id="btnSolve" onclick="solvePuzzle()">🚀 Ejecutar</button>
                     <button class="btn btn-ghost" onclick="randomize()">🎲</button>
                 </div>
             </div>
         </div>
 
-        <!-- Loader -->
         <div class="loader-overlay" id="loader">
             <div class="spinner"></div>
             <p>Ejecutando 3 algoritmos en paralelo…</p>
         </div>
 
-        <!-- Results -->
         <div class="results-section" id="resultsSection">
             <div class="winner-banner" id="winnerBanner">
-                <div class="trophy">🏆</div>
-                <h3 id="winnerName"></h3>
+                <h3>🏆 <span id="winnerName"></span></h3>
                 <p id="winnerDesc"></p>
             </div>
             <div class="total-time">
-                Tiempo total de ejecución paralela: <strong id="totalTime">—</strong>
+                Tiempo total: <strong id="totalTime">—</strong>
             </div>
             <div class="results-grid" id="resultsGrid"></div>
         </div>
@@ -337,30 +274,19 @@
 
     <script>
         function getInputValues() {
-            const estado = [
-                parseInt(document.getElementById('i0').value),
-                parseInt(document.getElementById('i1').value),
-                parseInt(document.getElementById('i2').value),
-                parseInt(document.getElementById('i3').value)
-            ];
-            const meta = [
-                parseInt(document.getElementById('m0').value),
-                parseInt(document.getElementById('m1').value),
-                parseInt(document.getElementById('m2').value),
-                parseInt(document.getElementById('m3').value)
-            ];
-            return { estado, meta };
+            return {
+                estado: [0,1,2,3].map(i => parseInt(document.getElementById('i'+i).value)),
+                meta: [0,1,2,3].map(i => parseInt(document.getElementById('m'+i).value))
+            };
         }
 
         function randomize() {
-            const arr = [1, 2, 3, 4];
+            const arr = [1,2,3,4];
             for (let i = arr.length - 1; i > 0; i--) {
                 const j = Math.floor(Math.random() * (i + 1));
                 [arr[i], arr[j]] = [arr[j], arr[i]];
             }
-            for (let k = 0; k < 4; k++) {
-                document.getElementById('i' + k).value = arr[k];
-            }
+            arr.forEach((v, k) => document.getElementById('i'+k).value = v);
         }
 
         function classForAlgo(name) {
@@ -370,17 +296,15 @@
         }
 
         function renderSteps(path) {
-            if (!path || path.length === 0) return '<div class="error-msg">Sin pasos</div>';
-            let html = '<div class="steps-title">Recorrido paso a paso</div><div class="steps-list">';
+            if (!path || !path.length) return '<div class="error-msg">Sin pasos</div>';
+            let html = '<div class="steps-title">Recorrido</div><div class="steps-list">';
             path.forEach((step, idx) => {
-                const delay = idx * 0.05;
-                html += `<div class="step-item" style="animation-delay:${delay}s">
+                html += `<div class="step-item">
                     <span class="step-num">${idx}</span>
                     <span class="step-state">[${step.join(', ')}]</span>
                 </div>`;
             });
-            html += '</div>';
-            return html;
+            return html + '</div>';
         }
 
         async function solvePuzzle() {
@@ -415,72 +339,48 @@
 
                 document.getElementById('totalTime').textContent = data.total_time_ms + ' ms';
 
-                // Find best
                 const successful = data.results.filter(r => r.success);
                 let best = null;
-                if (successful.length > 0) {
+                if (successful.length) {
                     best = successful.reduce((a, b) => {
                         if (a.steps !== b.steps) return a.steps < b.steps ? a : b;
                         return a.time_ms < b.time_ms ? a : b;
                     });
                 }
 
-                // Sort: heur, iter, recur
-                const order = { 'heur': 0, 'iter': 1, 'recur': 2 };
+                const order = { heur: 0, iter: 1, recur: 2 };
                 data.results.sort((a, b) => order[classForAlgo(a.name)] - order[classForAlgo(b.name)]);
 
                 grid.innerHTML = '';
                 data.results.forEach(r => {
                     const cls = classForAlgo(r.name);
                     const isBest = best && r.name === best.name;
-                    const card = document.createElement('div');
-                    card.className = `result-card ${cls}`;
-
-                    let tagHTML = r.success
+                    const tag = r.success
                         ? (isBest ? '<span class="tag tag-best">🏆 Mejor</span>' : '<span class="tag tag-ok">✓ OK</span>')
                         : '<span class="tag tag-fail">✗ Fallo</span>';
 
-                    let bodyHTML = '';
-                    if (r.success) {
-                        bodyHTML = `
-                            <div class="stats-row">
-                                <div class="stat">
-                                    <div class="stat-value">${r.steps}</div>
-                                    <div class="stat-label">Pasos</div>
-                                </div>
-                                <div class="stat">
-                                    <div class="stat-value">${r.time_ms}</div>
-                                    <div class="stat-label">ms</div>
-                                </div>
-                            </div>
-                            ${renderSteps(r.path)}
-                        `;
-                    } else {
-                        bodyHTML = `<div class="error-msg">❌ ${r.error}</div>`;
-                    }
+                    const body = r.success
+                        ? `<div class="stats-row">
+                                <div class="stat"><div class="stat-value">${r.steps}</div><div class="stat-label">Pasos</div></div>
+                                <div class="stat"><div class="stat-value">${r.time_ms}</div><div class="stat-label">ms</div></div>
+                           </div>${renderSteps(r.path)}`
+                        : `<div class="error-msg">❌ ${r.error}</div>`;
 
-                    card.innerHTML = `
-                        <div class="card-header">
-                            <h3>${r.name}</h3>
-                            ${tagHTML}
-                        </div>
-                        ${bodyHTML}
-                    `;
+                    const card = document.createElement('div');
+                    card.className = `result-card ${cls}`;
+                    card.innerHTML = `<div class="card-header"><h3>${r.name}</h3>${tag}</div>${body}`;
                     grid.appendChild(card);
                 });
 
-                // Winner banner
                 if (best) {
                     document.getElementById('winnerName').textContent = best.name;
-                    document.getElementById('winnerDesc').textContent =
-                        `${best.steps} pasos en ${best.time_ms} ms`;
+                    document.getElementById('winnerDesc').textContent = `${best.steps} pasos en ${best.time_ms} ms`;
                     banner.classList.add('active');
                 }
-
                 results.classList.add('active');
             } catch (err) {
                 loader.classList.remove('active');
-                grid.innerHTML = `<div class="error-msg">Error de conexión: ${err.message}</div>`;
+                grid.innerHTML = `<div class="error-msg">Error: ${err.message}</div>`;
                 results.classList.add('active');
             }
             btn.disabled = false;
