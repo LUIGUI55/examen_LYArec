@@ -494,8 +494,8 @@
                     </div>
                 </div>
                 <div class="btn-actions">
-                    <button class="btn btn-primary" id="btnSolve" onclick="solvePuzzle()">🚀 Ejecutar</button>
-                    <button class="btn btn-ghost" onclick="randomize()">🎲</button>
+                    <button class="btn btn-primary" id="btnSolve" onclick="solvePuzzle()">Ejecutar</button>
+                    <button class="btn btn-ghost" onclick="randomize()">Aleatorio</button>
                 </div>
             </div>
         </div>
@@ -608,7 +608,7 @@
                         ? `<div class="stats-row">
                                 <div class="stat"><div class="stat-value">${r.steps}</div><div class="stat-label">Pasos</div></div>
                                 <div class="stat"><div class="stat-value">${r.time_ms}</div><div class="stat-label">ms</div></div>
-                           </div>${renderSteps(r.path)}`
+                        </div>${renderSteps(r.path)}`
                         : `<div class="error-msg">❌ ${r.error}</div>`;
 
                     const card = document.createElement('div');
