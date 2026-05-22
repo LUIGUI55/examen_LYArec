@@ -513,39 +513,61 @@
             }
         };
 
-        // Event handler for Random Location Button
-        document.getElementById('randomLocationBtn').onclick = async () => {
-            const msgDiv = document.getElementById('add-message');
-            msgDiv.classList.add('hidden');
-            msgDiv.className = 'alert-message';
+        const poolCities = [
+            {name: "Guadalajara", lat: 20.671956, lon: -103.348822},
+            {name: "Puebla", lat: 19.04144, lon: -98.20627},
+            {name: "Veracruz", lat: 19.173773, lon: -96.134224},
+            {name: "Cancun", lat: 21.161908, lon: -86.851528},
+            {name: "Merida", lat: 20.96737, lon: -89.59258},
+            {name: "Oaxaca", lat: 17.073184, lon: -96.726589},
+            {name: "Acapulco", lat: 16.853109, lon: -99.823653},
+            {name: "Mazatlan", lat: 23.249414, lon: -106.411141},
+            {name: "Chihuahua", lat: 28.632996, lon: -106.0691},
+            {name: "Hermosillo", lat: 29.072967, lon: -110.955919},
+            {name: "Leon", lat: 21.12186, lon: -101.682508},
+            {name: "Morelia", lat: 19.70078, lon: -101.18443},
+            {name: "Culiacan", lat: 24.80536, lon: -107.39441},
+            {name: "Saltillo", lat: 25.43833, lon: -100.97368},
+            {name: "Durango", lat: 24.02772, lon: -104.65318},
+            {name: "Tepic", lat: 21.50393, lon: -104.89459},
+            {name: "Colima", lat: 19.24333, lon: -103.725},
+            {name: "Campeche", lat: 19.83013, lon: -90.53491},
+            {name: "Zacatecas", lat: 22.77087, lon: -102.58325},
+            {name: "Villahermosa", lat: 17.98689, lon: -92.93028}
+        ];
+
+        // Event handler for Random Location Button (Autocomplete)
+        document.getElementById('randomLocationBtn').onclick = () => {
+            const available = poolCities.filter(c => !globalCities.some(gc => gc.toLowerCase() === c.name.toLowerCase()));
             
-            try {
-                const response = await fetch('/api/add_random_location', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ type: 'ucs' })
-                });
-                const data = await response.json();
-                
-                if (data.success) {
-                    msgDiv.innerHTML = `¡Ciudad <strong>${data.name}</strong> creada al azar!<br>` +
-                                       `Coordenadas: ${data.lat}, ${data.lon}<br>` +
-                                       `Conectada a: <strong>${data.connected_to}</strong> (${data.weight} km)`;
-                    msgDiv.classList.add('alert-success');
-                    msgDiv.classList.remove('hidden');
-                    
-                    // Update dropdowns
-                    updateAllDropdowns(data.cities);
-                } else {
-                    msgDiv.textContent = data.error || 'Error al generar ubicación aleatoria';
-                    msgDiv.classList.add('alert-error');
-                    msgDiv.classList.remove('hidden');
-                }
-            } catch (err) {
-                msgDiv.textContent = 'Error de conexión con el servidor.';
-                msgDiv.classList.add('alert-error');
-                msgDiv.classList.remove('hidden');
+            let name, lat, lon;
+            if (available.length > 0) {
+                const chosen = available[Math.floor(Math.random() * available.length)];
+                name = chosen.name;
+                lat = chosen.lat;
+                lon = chosen.lon;
+            } else {
+                name = "Ciudad_" + Math.floor(100 + Math.random() * 900);
+                lat = (16.0 + Math.random() * 15.0).toFixed(4);
+                lon = (-115.0 + Math.random() * 20.0).toFixed(4);
             }
+            
+            document.getElementById('new-name').value = name.toUpperCase();
+            document.getElementById('new-lat').value = lat;
+            document.getElementById('new-lon').value = lon;
+            
+            if (globalCities.length > 0) {
+                const randomExisting = globalCities[Math.floor(Math.random() * globalCities.length)];
+                document.getElementById('new-connected').value = randomExisting;
+            }
+            
+            const randomWeight = Math.floor(Math.random() * 550) + 150;
+            document.getElementById('new-weight').value = randomWeight;
+            
+            const msgDiv = document.getElementById('add-message');
+            msgDiv.innerHTML = `¡Valores autocompletados al azar! Revisa los campos y haz clic en <strong>Añadir Ubicación</strong> para guardarla.`;
+            msgDiv.className = 'alert-message alert-success';
+            msgDiv.classList.remove('hidden');
         };
 
         document.getElementById('borrarRutaBtn').onclick = () => {
