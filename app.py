@@ -140,6 +140,70 @@ def solve_carretera_ucs():
             
     return jsonify({'path': path_total, 'cost': costo_total, 'success': True})
 
+@app.route('/api/add_location', methods=['POST'])
+def add_location():
+    data = request.json
+    raw_name = data.get('name', '').strip()
+    try:
+        lat = float(data.get('lat'))
+        lon = float(data.get('lon'))
+        weight = int(data.get('weight'))
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Parámetros numéricos inválidos.', 'success': False}), 400
+        
+    connected_to = data.get('connected_to', '').strip()
+    req_type = data.get('type', 'astar')
+    
+    if not raw_name or not connected_to:
+        return jsonify({'error': 'Faltan parámetros requeridos.', 'success': False}), 400
+        
+    # Definir nombres para A* (preserva mayúsculas/minúsculas)
+    name_astar = raw_name[0].upper() + raw_name[1:] if len(raw_name) > 0 else raw_name
+    conn_astar = connected_to
+    
+    # Definir nombres para UCS (siempre en mayúsculas)
+    name_ucs = raw_name.upper()
+    conn_ucs = connected_to.upper()
+    
+    # Validar si ya existe en A* o UCS
+    if name_astar in Carretera_Astar.coord or name_ucs in Carretera_UCS.conexiones:
+        return jsonify({'error': 'La ubicación ya existe.', 'success': False}), 400
+        
+    # Agregar a Carretera_Astar (Coordenadas y conexiones)
+    Carretera_Astar.coord[name_astar] = (lat, lon)
+    if name_astar not in Carretera_Astar.conexiones:
+        Carretera_Astar.conexiones[name_astar] = {}
+    Carretera_Astar.conexiones[name_astar][conn_astar] = weight
+    
+    if conn_astar not in Carretera_Astar.conexiones:
+        Carretera_Astar.conexiones[conn_astar] = {}
+    Carretera_Astar.conexiones[conn_astar][name_astar] = weight
+    
+    # Agregar a Carretera_UCS (conexiones)
+    if name_ucs not in Carretera_UCS.conexiones:
+        Carretera_UCS.conexiones[name_ucs] = {}
+    Carretera_UCS.conexiones[name_ucs][conn_ucs] = weight
+    
+    if conn_ucs not in Carretera_UCS.conexiones:
+        Carretera_UCS.conexiones[conn_ucs] = {}
+    Carretera_UCS.conexiones[conn_ucs][name_ucs] = weight
+    
+    # Devolver la lista correspondiente según el origen de la petición
+    if req_type == 'ucs':
+        all_cities = set()
+        for origen, destinos in Carretera_UCS.conexiones.items():
+            all_cities.add(origen)
+            all_cities.update(destinos)
+        cities = sorted(list(all_cities))
+    else:
+        all_cities = set()
+        for origen, destinos in Carretera_Astar.conexiones.items():
+            all_cities.add(origen)
+            all_cities.update(destinos)
+        cities = sorted(list(all_cities))
+        
+    return jsonify({'success': True, 'cities': cities})
+
 @app.route('/carretera-astar')
 def carretera_astar():
     all_cities = set()

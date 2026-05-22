@@ -21,10 +21,13 @@
             font-family: 'Inter', sans-serif;
             margin: 0;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
             min-height: 100vh;
-            overflow-x: hidden;
+            padding: 40px 20px;
+            box-sizing: border-box;
+            gap: 20px;
         }
 
         .glass-container {
@@ -36,6 +39,7 @@
             width: 100%;
             max-width: 500px;
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            box-sizing: border-box;
         }
 
         h1 {
@@ -63,8 +67,8 @@
             gap: 10px;
         }
 
-        select {
-            flex: 1;
+        select, input[type="text"], input[type="number"] {
+            width: 100%;
             padding: 12px;
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -72,6 +76,14 @@
             color: white;
             font-size: 1rem;
             outline: none;
+            box-sizing: border-box;
+            transition: all 0.3s;
+        }
+
+        select:focus, input[type="text"]:focus, input[type="number"]:focus {
+            border-color: var(--primary);
+            background: rgba(15, 23, 42, 0.8);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
         }
 
         .btn-remove {
@@ -107,6 +119,24 @@
         }
 
         .btn-solve:hover {
+            transform: translateY(-2px);
+            opacity: 0.9;
+        }
+
+        .btn-add-loc {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(to right, #10b981, #059669);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+
+        .btn-add-loc:hover {
             transform: translateY(-2px);
             opacity: 0.9;
         }
@@ -174,10 +204,31 @@
             text-decoration: none;
             font-size: 0.85rem;
         }
+
+        .alert-message {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            margin-top: 15px;
+            text-align: center;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
     </style>
 </head>
 
 <body>
+    <!-- Main Route Card -->
     <div class="glass-container">
         <h1>Carretera (UCS)</h1>
         <p style="text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">Uniform Cost Search - Ruta óptima secuencial con cálculo de costo total</p>
@@ -220,10 +271,52 @@
             <div id="pathResult" class="path-display"></div>
         </div>
 
-        <div id="error" class="hidden" style="color: #ef4444; margin-top: 20px; text-align: center; font-size: 0.9rem;">
-        </div>
+        <div id="error" class="hidden alert-message alert-error"></div>
 
         <a href="/" class="back-link">← Volver al Dashboard</a>
+    </div>
+
+    <!-- Add Location Card -->
+    <div class="glass-container">
+        <h2 style="text-align: center; background: linear-gradient(to right, #34d399, #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 20px; font-size: 1.5rem; font-weight: 600;">Añadir Nueva Ubicación</h2>
+        <p style="text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">Inserta coordenadas reales y su conexión inicial</p>
+
+        <form id="addLocationForm">
+            <div class="form-group">
+                <label>Nombre de la Ubicación</label>
+                <input type="text" id="new-name" placeholder="Ej. TIJUANA" required>
+            </div>
+
+            <div class="form-group" style="display: flex; gap: 15px;">
+                <div style="flex: 1;">
+                    <label>Latitud</label>
+                    <input type="number" step="any" id="new-lat" placeholder="Ej. 32.5149" required>
+                </div>
+                <div style="flex: 1;">
+                    <label>Longitud</label>
+                    <input type="number" step="any" id="new-lon" placeholder="Ej. -115.4522" required>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Conectar a (Ubicación Existente)</label>
+                <select id="new-connected" required>
+                    <option value="" disabled selected>Selecciona ubicación...</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}">{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Peso / Distancia de Conexión (Costo en km)</label>
+                <input type="number" id="new-weight" placeholder="Ej. 450" required>
+            </div>
+
+            <button type="submit" class="btn-add-loc">Añadir Ubicación</button>
+        </form>
+
+        <div id="add-message" class="hidden alert-message"></div>
     </div>
 
     <!-- Template para agregar escalas/destinos -->
@@ -244,6 +337,7 @@
 
     <script>
         let nodeCount = 1;
+        let globalCities = [{% for city in cities %}"{{ city }}",{% endfor %}];
 
         document.getElementById('addNodeBtn').onclick = () => {
             nodeCount++;
@@ -263,6 +357,13 @@
                 renumberNodes();
             };
 
+            // Populate the new dropdown with the current globalCities list
+            const select = clone.querySelector('.node-select');
+            select.innerHTML = '<option value="" disabled selected>Selecciona destino...</option>';
+            globalCities.forEach(city => {
+                select.add(new Option(city, city));
+            });
+
             container.appendChild(clone);
         };
 
@@ -274,6 +375,34 @@
                 group.id = `group-${nodeCount}`;
                 group.querySelector('.node-label').textContent = `Ciudad Destino ${nodeCount}`;
             });
+        }
+
+        function updateAllDropdowns(cities) {
+            globalCities = cities;
+            const selects = document.querySelectorAll('.node-select');
+            const connectSelect = document.getElementById('new-connected');
+            
+            const selectedValues = Array.from(selects).map(s => s.value);
+            const connectValue = connectSelect.value;
+            
+            selects.forEach((select, idx) => {
+                const prevVal = selectedValues[idx];
+                select.innerHTML = '<option value="" disabled selected>Selecciona...</option>';
+                cities.forEach(city => {
+                    select.add(new Option(city, city));
+                });
+                if (prevVal && cities.includes(prevVal)) {
+                    select.value = prevVal;
+                }
+            });
+            
+            connectSelect.innerHTML = '<option value="" disabled selected>Selecciona ubicación...</option>';
+            cities.forEach(city => {
+                connectSelect.add(new Option(city, city));
+            });
+            if (connectValue && cities.includes(connectValue)) {
+                connectSelect.value = connectValue;
+            }
         }
 
         document.getElementById('ucsForm').onsubmit = async (e) => {
@@ -326,6 +455,60 @@
             } catch (e) {
                 errDiv.innerText = "Error de conexión";
                 errDiv.classList.remove('hidden');
+            }
+        };
+
+        // Event handler for Add Location Form
+        document.getElementById('addLocationForm').onsubmit = async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('new-name').value.trim();
+            const lat = document.getElementById('new-lat').value;
+            const lonVal = document.getElementById('new-lon').value;
+            const connected_to = document.getElementById('new-connected').value;
+            const weight = document.getElementById('new-weight').value;
+            
+            const msgDiv = document.getElementById('add-message');
+            msgDiv.classList.add('hidden');
+            msgDiv.className = 'alert-message';
+            
+            try {
+                const response = await fetch('/api/add_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name,
+                        lat,
+                        lon: lonVal,
+                        connected_to,
+                        weight,
+                        type: 'ucs'
+                    })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    msgDiv.textContent = `¡Ubicación ${name} agregada con éxito!`;
+                    msgDiv.classList.add('alert-success');
+                    msgDiv.classList.remove('hidden');
+                    
+                    // Clear inputs
+                    document.getElementById('new-name').value = '';
+                    document.getElementById('new-lat').value = '';
+                    document.getElementById('new-lon').value = '';
+                    document.getElementById('new-weight').value = '';
+                    
+                    // Update dropdowns dynamically
+                    updateAllDropdowns(data.cities);
+                } else {
+                    msgDiv.textContent = data.error || 'Error al agregar la ubicación';
+                    msgDiv.classList.add('alert-error');
+                    msgDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                msgDiv.textContent = 'Error de conexión con el servidor.';
+                msgDiv.classList.add('alert-error');
+                msgDiv.classList.remove('hidden');
             }
         };
 
