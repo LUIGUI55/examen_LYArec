@@ -314,6 +314,7 @@
             </div>
 
             <button type="submit" class="btn-add-loc">Añadir Ubicación</button>
+            <button type="button" id="randomLocationBtn" class="btn-secondary" style="width: 100%; margin-top: 10px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); color: #93c5fd;">Generar Ubicación Aleatoria</button>
         </form>
 
         <div id="add-message" class="hidden alert-message"></div>
@@ -502,6 +503,41 @@
                     updateAllDropdowns(data.cities);
                 } else {
                     msgDiv.textContent = data.error || 'Error al agregar la ubicación';
+                    msgDiv.classList.add('alert-error');
+                    msgDiv.classList.remove('hidden');
+                }
+            } catch (err) {
+                msgDiv.textContent = 'Error de conexión con el servidor.';
+                msgDiv.classList.add('alert-error');
+                msgDiv.classList.remove('hidden');
+            }
+        };
+
+        // Event handler for Random Location Button
+        document.getElementById('randomLocationBtn').onclick = async () => {
+            const msgDiv = document.getElementById('add-message');
+            msgDiv.classList.add('hidden');
+            msgDiv.className = 'alert-message';
+            
+            try {
+                const response = await fetch('/api/add_random_location', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: 'ucs' })
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    msgDiv.innerHTML = `¡Ciudad <strong>${data.name}</strong> creada al azar!<br>` +
+                                       `Coordenadas: ${data.lat}, ${data.lon}<br>` +
+                                       `Conectada a: <strong>${data.connected_to}</strong> (${data.weight} km)`;
+                    msgDiv.classList.add('alert-success');
+                    msgDiv.classList.remove('hidden');
+                    
+                    // Update dropdowns
+                    updateAllDropdowns(data.cities);
+                } else {
+                    msgDiv.textContent = data.error || 'Error al generar ubicación aleatoria';
                     msgDiv.classList.add('alert-error');
                     msgDiv.classList.remove('hidden');
                 }

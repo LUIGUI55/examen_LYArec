@@ -204,6 +204,107 @@ def add_location():
         
     return jsonify({'success': True, 'cities': cities})
 
+import random
+
+RANDOM_CITIES_POOL = [
+    {"name": "Guadalajara", "lat": 20.671956, "lon": -103.348822},
+    {"name": "Puebla", "lat": 19.04144, "lon": -98.20627},
+    {"name": "Veracruz", "lat": 19.173773, "lon": -96.134224},
+    {"name": "Cancun", "lat": 21.161908, "lon": -86.851528},
+    {"name": "Merida", "lat": 20.96737, "lon": -89.59258},
+    {"name": "Oaxaca", "lat": 17.073184, "lon": -96.726589},
+    {"name": "Acapulco", "lat": 16.853109, "lon": -99.823653},
+    {"name": "Mazatlan", "lat": 23.249414, "lon": -106.411141},
+    {"name": "Chihuahua", "lat": 28.632996, "lon": -106.0691},
+    {"name": "Hermosillo", "lat": 29.072967, "lon": -110.955919},
+    {"name": "Leon", "lat": 21.12186, "lon": -101.682508},
+    {"name": "Morelia", "lat": 19.70078, "lon": -101.18443},
+    {"name": "Culiacan", "lat": 24.80536, "lon": -107.39441},
+    {"name": "Saltillo", "lat": 25.43833, "lon": -100.97368},
+    {"name": "Durango", "lat": 24.02772, "lon": -104.65318},
+    {"name": "Tepic", "lat": 21.50393, "lon": -104.89459},
+    {"name": "Colima", "lat": 19.24333, "lon": -103.725},
+    {"name": "Campeche", "lat": 19.83013, "lon": -90.53491},
+    {"name": "Zacatecas", "lat": 22.77087, "lon": -102.58325},
+    {"name": "Villahermosa", "lat": 17.98689, "lon": -92.93028}
+]
+
+@app.route('/api/add_random_location', methods=['POST'])
+def add_random_location():
+    data = request.json or {}
+    req_type = data.get('type', 'astar')
+    
+    # Filtrar las ciudades del pool que no estén en el grafo de A*
+    available = [c for c in RANDOM_CITIES_POOL if c['name'] not in Carretera_Astar.coord]
+    
+    if not available:
+        num = len(Carretera_Astar.coord) - 10
+        city_name = f"CiudadAleatoria_{num}"
+        lat = round(random.uniform(16.0, 31.0), 6)
+        lon = round(random.uniform(-115.0, -90.0), 6)
+    else:
+        chosen = random.choice(available)
+        city_name = chosen['name']
+        lat = chosen['lat']
+        lon = chosen['lon']
+        
+    # Elegir una ciudad existente al azar
+    existing = list(Carretera_Astar.coord.keys())
+    if not existing:
+        return jsonify({'error': 'No hay ciudades existentes para conectar.', 'success': False}), 400
+        
+    connected_to_astar = random.choice(existing)
+    weight = random.randint(150, 700)
+    
+    # Agregar a Carretera_Astar
+    Carretera_Astar.coord[city_name] = (lat, lon)
+    if city_name not in Carretera_Astar.conexiones:
+        Carretera_Astar.conexiones[city_name] = {}
+    Carretera_Astar.conexiones[city_name][connected_to_astar] = weight
+    
+    if connected_to_astar not in Carretera_Astar.conexiones:
+        Carretera_Astar.conexiones[connected_to_astar] = {}
+    Carretera_Astar.conexiones[connected_to_astar][city_name] = weight
+    
+    # Agregar a Carretera_UCS (mayúsculas)
+    city_name_ucs = city_name.upper()
+    connected_to_ucs = connected_to_astar.upper()
+    if city_name_ucs not in Carretera_UCS.conexiones:
+        Carretera_UCS.conexiones[city_name_ucs] = {}
+    Carretera_UCS.conexiones[city_name_ucs][connected_to_ucs] = weight
+    
+    if connected_to_ucs not in Carretera_UCS.conexiones:
+        Carretera_UCS.conexiones[connected_to_ucs] = {}
+    Carretera_UCS.conexiones[connected_to_ucs][city_name_ucs] = weight
+    
+    # Obtener lista según tipo de petición
+    if req_type == 'ucs':
+        all_cities = set()
+        for origen, destinos in Carretera_UCS.conexiones.items():
+            all_cities.add(origen)
+            all_cities.update(destinos)
+        cities = sorted(list(all_cities))
+        display_name = city_name_ucs
+        display_connected = connected_to_ucs
+    else:
+        all_cities = set()
+        for origen, destinos in Carretera_Astar.conexiones.items():
+            all_cities.add(origen)
+            all_cities.update(destinos)
+        cities = sorted(list(all_cities))
+        display_name = city_name
+        display_connected = connected_to_astar
+        
+    return jsonify({
+        'success': True,
+        'name': display_name,
+        'connected_to': display_connected,
+        'weight': weight,
+        'lat': lat,
+        'lon': lon,
+        'cities': cities
+    })
+
 @app.route('/carretera-astar')
 def carretera_astar():
     all_cities = set()
