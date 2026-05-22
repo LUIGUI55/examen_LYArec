@@ -556,11 +556,6 @@
             document.getElementById('new-lat').value = lat;
             document.getElementById('new-lon').value = lon;
             
-            if (globalCities.length > 0) {
-                const randomExisting = globalCities[Math.floor(Math.random() * globalCities.length)];
-                document.getElementById('new-connected').value = randomExisting;
-            }
-            
             const randomWeight = Math.floor(Math.random() * 550) + 150;
             document.getElementById('new-weight').value = randomWeight;
             
