@@ -27,6 +27,9 @@ class Nodo:
     def set_costo(self, costo):
         self.costo = costo
 
+    def get_costo(self):
+        return self.costo
+
     def igual(self, nodo):
         return self.get_datos() == nodo.get_datos()
 

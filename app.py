@@ -10,6 +10,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import Vuelos_BPI
 import Vuelos_BPS
 import Carretera_UCS
+import Carretera_Astar
 from dfs_backtraking import buscar_mejor_valor_backtracking
 from arbol import Nodo
 
@@ -100,25 +101,95 @@ def carretera_ucs():
 @app.route('/api/solve_carretera_ucs', methods=['POST'])
 def solve_carretera_ucs():
     data = request.json
-    origen = data.get('origen')
-    destino = data.get('destino')
+    nodos = data.get('nodos')
     
-    if not origen or not destino:
-        return jsonify({'error': 'Faltan parámetros', 'success': False}), 400
+    if not nodos:
+        origen = data.get('origen')
+        destino = data.get('destino')
+        if origen and destino:
+            nodos = [origen, destino]
+            
+    if not nodos or len(nodos) < 2:
+        return jsonify({'error': 'Se requieren al menos dos ciudades.', 'success': False}), 400
         
-    nodo_solucion = Carretera_UCS.buscar_solucion_UCS(origen, destino)
+    path_total = []
+    costo_total = 0
     
-    if nodo_solucion:
-        resultado = []
-        nodo = nodo_solucion
-        costo_total = nodo.costo
-        while nodo:
-            resultado.append(nodo.get_datos())
-            nodo = nodo.get_padre()
-        resultado.reverse()
-        return jsonify({'path': resultado, 'cost': costo_total, 'success': True})
-    else:
-        return jsonify({'error': 'No se encontró una ruta óptima entre estas ciudades.', 'success': False})
+    for i in range(len(nodos) - 1):
+        sub_origen = nodos[i]
+        sub_destino = nodos[i+1]
+        
+        nodo_solucion = Carretera_UCS.buscar_solucion_UCS(sub_origen, sub_destino)
+        
+        if nodo_solucion:
+            resultado = []
+            nodo = nodo_solucion
+            sub_costo = nodo.costo
+            costo_total += sub_costo
+            while nodo:
+                resultado.append(nodo.get_datos())
+                nodo = nodo.get_padre()
+            resultado.reverse()
+            
+            if i == 0:
+                path_total.extend(resultado)
+            else:
+                path_total.extend(resultado[1:])
+        else:
+            return jsonify({'error': f'No se encontró una ruta óptima entre {sub_origen} y {sub_destino}.', 'success': False})
+            
+    return jsonify({'path': path_total, 'cost': costo_total, 'success': True})
+
+@app.route('/carretera-astar')
+def carretera_astar():
+    all_cities = set()
+    for origen, destinos in Carretera_Astar.conexiones.items():
+        all_cities.add(origen)
+        all_cities.update(destinos)
+    cities = sorted(list(all_cities))
+    return render_template('carretera_astar.html', cities=cities)
+
+@app.route('/api/solve_carretera_astar', methods=['POST'])
+def solve_carretera_astar():
+    data = request.json
+    nodos = data.get('nodos')
+    
+    if not nodos:
+        origen = data.get('origen')
+        destino = data.get('destino')
+        if origen and destino:
+            nodos = [origen, destino]
+            
+    if not nodos or len(nodos) < 2:
+        return jsonify({'error': 'Se requieren al menos dos ciudades.', 'success': False}), 400
+        
+    path_total = []
+    costo_total = 0
+    
+    for i in range(len(nodos) - 1):
+        sub_origen = nodos[i]
+        sub_destino = nodos[i+1]
+        
+        nodo_solucion = Carretera_Astar.buscar_solucion_USC(Carretera_Astar.conexiones, sub_origen, sub_destino)
+        
+        if nodo_solucion:
+            resultado = []
+            nodo = nodo_solucion
+            sub_costo = nodo.get_costo()
+            costo_total += sub_costo
+            while nodo:
+                resultado.append(nodo.get_datos())
+                nodo = nodo.get_padre()
+            resultado.reverse()
+            
+            if i == 0:
+                path_total.extend(resultado)
+            else:
+                path_total.extend(resultado[1:])
+        else:
+            return jsonify({'error': f'No se encontró una ruta óptima entre {sub_origen} y {sub_destino}.', 'success': False})
+            
+    return jsonify({'path': path_total, 'cost': costo_total, 'success': True})
 
 @app.route('/vuelos-bpi')
 def vuelos_bpi():

@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Carretera UCS</title>
+    <title>Carretera A*</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
@@ -179,10 +179,10 @@
 
 <body>
     <div class="glass-container">
-        <h1>Carretera (UCS)</h1>
-        <p style="text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">Uniform Cost Search - Ruta óptima secuencial con cálculo de costo total</p>
+        <h1>Carretera (A*)</h1>
+        <p style="text-align: center; color: #94a3b8; margin-bottom: 20px; font-size: 0.9rem;">Búsqueda A* - Ruta óptima secuencial con cálculo de costo total</p>
 
-        <form id="ucsForm">
+        <form id="astarForm">
             <div id="nodesContainer">
                 <div class="form-group" id="group-0">
                     <label>Ciudad Origen</label>
@@ -207,7 +207,7 @@
 
             <button type="button" id="addNodeBtn" class="btn-secondary" style="width: 100%; margin-bottom: 10px;">+ Agregar Destino / Escala</button>
 
-            <button type="submit" class="btn-solve">Buscar Ruta Óptima (UCS)</button>
+            <button type="submit" class="btn-solve">Buscar Ruta Óptima (A*)</button>
         </form>
 
         <div class="btn-container">
@@ -276,7 +276,7 @@
             });
         }
 
-        document.getElementById('ucsForm').onsubmit = async (e) => {
+        document.getElementById('astarForm').onsubmit = async (e) => {
             e.preventDefault();
 
             const selects = document.querySelectorAll('.node-select');
@@ -297,7 +297,7 @@
             pathDiv.innerHTML = '';
 
             try {
-                const response = await fetch('/api/solve_carretera_ucs', {
+                const response = await fetch('/api/solve_carretera_astar', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nodos })

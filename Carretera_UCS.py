@@ -43,7 +43,7 @@ def buscar_solucion_UCS(estado_inicial, solucion):
             if dato_nodo in conexiones:
                 lista_hijos = []
                 for un_hijo, costo in conexiones[dato_nodo].items():
-                    hijo = Nodo(un_hijo)
+                    hijo = Nodo(un_hijo, nodo)
                     hijo.set_costo(nodo.costo + costo)
                     
                     if un_hijo not in nodos_visitados:
