@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A* Selección de Ruedas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --container-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #16a34a;
+            --accent: #4f46e5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            border-radius: 0 !important;
+            /* Quita todos los border radius */
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .back-link {
+            align-self: flex-start;
+            max-width: 800px;
+            width: 100%;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        .back-link:hover {
+            color: var(--text-main);
+            text-decoration: underline;
+        }
+
+        .main-container {
+            max-width: 800px;
+            width: 100%;
+            background: var(--container-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            box-shadow: none;
+            /* Diseño más plano y simple */
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 25px;
+        }
+
+        .alert-explanation {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 15px;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #1e3a8a;
+        }
+
+        .section-title {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 5px;
+        }
+
+        /* Cost Matrix Table */
+        .matrix-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .matrix-table th {
+            color: var(--text-main);
+            font-weight: 600;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            background: #f1f5f9;
+            text-align: center;
+        }
+
+        .matrix-table td {
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .matrix-table td:first-child {
+            color: var(--text-main);
+            font-weight: 500;
+            text-align: left;
+            background: #f8fafc;
+        }
+
+        .matrix-input {
+            width: 80px;
+            padding: 6px;
+            background: #ffffff;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            text-align: center;
+            font-weight: 600;
+            outline: none;
+        }
+
+        .matrix-input:focus {
+            border-color: var(--primary);
+        }
+
+        .cell-selected {
+            background-color: #dcfce7 !important;
+            border: 2px solid var(--success) !important;
+            color: #14532d !important;
+            font-weight: bold;
+        }
+
+        .btn-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .btn-action {
+            padding: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.95rem;
+            text-align: center;
+        }
+
+        .btn-sec {
+            background: #f1f5f9;
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .btn-sec:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-pri {
+            background: var(--primary);
+            border: 1px solid var(--primary);
+            color: white;
+        }
+
+        .btn-pri:hover {
+            background: var(--primary-hover);
+        }
+
+        /* Result Section */
+        .result-section {
+            margin-top: 30px;
+            border-top: 1px solid var(--border-color);
+            padding-top: 25px;
+        }
+
+        .final-badge {
+            display: inline-block;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background: var(--success);
+            padding: 8px 16px;
+            margin-bottom: 20px;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .timeline-step {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .timeline-number {
+            background: var(--accent);
+            color: white;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .timeline-body {
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-grow: 1;
+            font-size: 0.9rem;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="/" class="back-link">← Volver al Portafolio</a>
+
+    <div class="main-container">
+        <h1>Selección de Ruedas (A*)</h1>
+
+        <!-- matriz de costos -->
+        <div>
+            <h2 class="section-title">Matriz de Costos por Fabricante ($)</h2>
+            <div style="overflow-x: auto;">
+                <table class="matrix-table" id="matrix-table">
+                    <thead>
+                        <tr>
+                            <th>Fabricante</th>
+                            <th>Tipo t</th>
+                            <th>Tipo h</th>
+                            <th>Tipo v</th>
+                            <th>Tipo w</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Empresa 1</td>
+                            <td><input type="number" id="val-1-t" class="matrix-input" value="20"></td>
+                            <td><input type="number" id="val-1-h" class="matrix-input" value="30"></td>
+                            <td><input type="number" id="val-1-v" class="matrix-input" value="20"></td>
+                            <td><input type="number" id="val-1-w" class="matrix-input" value="40"></td>
+                        </tr>
+                        <tr>
+                            <td>Empresa 2</td>
+                            <td><input type="number" id="val-2-t" class="matrix-input" value="50"></td>
+                            <td><input type="number" id="val-2-h" class="matrix-input" value="50"></td>
+                            <td><input type="number" id="val-2-v" class="matrix-input" value="40"></td>
+                            <td><input type="number" id="val-2-w" class="matrix-input" value="50"></td>
+                        </tr>
+                        <tr>
+                            <td>Empresa 3</td>
+                            <td><input type="number" id="val-3-t" class="matrix-input" value="60"></td>
+                            <td><input type="number" id="val-3-h" class="matrix-input" value="55"></td>
+                            <td><input type="number" id="val-3-v" class="matrix-input" value="50"></td>
+                            <td><input type="number" id="val-3-w" class="matrix-input" value="60"></td>
+                        </tr>
+                        <tr>
+                            <td>Empresa 4</td>
+                            <td><input type="number" id="val-4-t" class="matrix-input" value="100"></td>
+                            <td><input type="number" id="val-4-h" class="matrix-input" value="80"></td>
+                            <td><input type="number" id="val-4-v" class="matrix-input" value="60"></td>
+                            <td><input type="number" id="val-4-w" class="matrix-input" value="70"></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="btn-container">
+                <button class="btn-action btn-sec" onclick="restaurarDefault()">borrar solucion</button>
+                <button class="btn-action btn-pri" onclick="runSolver()">Calcular Solución Óptima</button>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="result-section" class="result-section hidden">
+            <h2 class="section-title">Solución Óptima Encontrada</h2>
+
+            <div style="text-align: center;">
+                <div class="final-badge" id="final-cost-badge">Costo Total: $0</div>
+            </div>
+
+            <div class="timeline" id="optimal-path-list">
+                <!-- JS Timeline -->
+            </div>
+        </div>
+
+    </div>
+
+    <footer style="text-align: center; color: #64748b; font-size: 0.85rem; margin-top: 10px;">
+
+    </footer>
+
+    <script>
+        const WHEELS = ['t', 'h', 'v', 'w'];
+
+        const defaultPrices = {
+            '1': { t: 20, h: 30, v: 20, w: 40 },
+            '2': { t: 50, h: 50, v: 40, w: 50 },
+            '3': { t: 60, h: 55, v: 50, w: 60 },
+            '4': { t: 100, h: 80, v: 60, w: 70 }
+        };
+
+        function restaurarDefault() {
+            for (let c = 1; c <= 4; c++) {
+                for (const w of WHEELS) {
+                    document.getElementById(`val-${c}-${w}`).value = defaultPrices[c][w];
+                }
+            }
+            document.getElementById('result-section').classList.add('hidden');
+            limpiarResaltado();
+        }
+
+        function getMatrixFromUI() {
+            const matrix = {};
+            for (let c = 1; c <= 4; c++) {
+                const companyName = `Empresa ${c}`;
+                matrix[companyName] = {};
+                WHEELS.forEach(w => {
+                    const inputVal = document.getElementById(`val-${c}-${w}`).value;
+                    matrix[companyName][w] = parseInt(inputVal) || 0;
+                });
+            }
+            return matrix;
+        }
+
+        function limpiarResaltado() {
+            document.querySelectorAll('.matrix-table td').forEach(td => {
+                td.className = '';
+            });
+        }
+
+        async function runSolver() {
+            limpiarResaltado();
+            const matrix = getMatrixFromUI();
+
+            try {
+                const response = await fetch('/api/solve_seleccion_ruedas', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ matrix })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Error en la respuesta del servidor");
+                }
+
+                const data = await response.json();
+                if (data && data.success) {
+                    document.getElementById('result-section').classList.remove('hidden');
+                    document.getElementById('final-cost-badge').textContent = `Costo Total Óptimo: $${data.total_cost}`;
+                    renderPath(data.path);
+                    resaltarCeldasGanadoras(data.path);
+                } else {
+                    alert("No se encontró solución: " + (data ? data.error : 'Sin datos'));
+                }
+            } catch (err) {
+                alert("Error al conectar con el servidor: " + err.message);
+            }
+        }
+
+        function renderPath(path) {
+            const list = document.getElementById('optimal-path-list');
+            list.innerHTML = '';
+
+            path.forEach((node, index) => {
+                if (index === 0) return;
+
+                const wheelIdx = index - 1;
+                const wheelName = WHEELS[wheelIdx].toUpperCase();
+                const company = node.state[wheelIdx];
+                const costoAcumulado = node.g;
+
+                const anteriorCosto = path[index - 1].g;
+                const costoIndividual = costoAcumulado - anteriorCosto;
+
+                const stepDiv = document.createElement('div');
+                stepDiv.className = 'timeline-step';
+                stepDiv.innerHTML = `
+                    <div class="timeline-number">${index}</div>
+                    <div class="timeline-body">
+                        <span>Rueda <strong>Tipo ${wheelName}</strong> comprada a <strong>${company}</strong> ($${costoIndividual})</span>
+                        <span style="color: var(--accent); font-weight: 600;">Acumulado: $${costoAcumulado}</span>
+                    </div>
+                `;
+                list.appendChild(stepDiv);
+            });
+        }
+
+        function resaltarCeldasGanadoras(path) {
+            const finalState = path[path.length - 1].state;
+
+            finalState.forEach((company, idx) => {
+                if (company) {
+                    const compNum = company.split(' ')[1];
+                    const td = document.querySelector(`.matrix-table tr:nth-child(${parseInt(compNum)}) td:nth-child(${idx + 2})`);
+                    if (td) {
+                        td.className = 'cell-selected';
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

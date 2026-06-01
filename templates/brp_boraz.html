@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRP Voraz (Algoritmo de los Ahorros)</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            font-family: system-ui, sans-serif;
+            padding: 30px 20px;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            max-width: 1100px;
+            margin: 0 auto 20px;
+        }
+
+        .nav-link {
+            text-decoration: none;
+            color: #e0e0e0;
+            background: #2d2d2d;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .nav-link:hover {
+            background: #3a3a3a;
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: #ffffff;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: #888;
+            font-size: 0.95rem;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1100px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: #242424;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        h2 {
+            font-size: 1.1rem;
+            color: #ffffff;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #333;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 4px;
+            color: #aaa;
+            font-size: 0.85rem;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 9px 10px;
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 4px;
+            color: #e0e0e0;
+            font-size: 0.95rem;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: #555;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #333;
+            color: #e0e0e0;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+
+        button:hover {
+            background: #404040;
+        }
+
+        button:active {
+            background: #2a2a2a;
+        }
+
+        button.btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        button.btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        button.btn-danger {
+            background: #7f1d1d;
+            color: #fca5a5;
+        }
+
+        button.btn-danger:hover {
+            background: #991b1b;
+        }
+
+        button.btn-green {
+            background: #14532d;
+            color: #86efac;
+        }
+
+        button.btn-green:hover {
+            background: #166534;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .demand-list {
+            max-height: 240px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+        }
+
+        .demand-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #1a1a1a;
+            padding: 8px 10px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+
+        .demand-item input {
+            width: 75px;
+            text-align: center;
+            padding: 5px;
+        }
+
+        #error-msg {
+            color: #fca5a5;
+            background: #450a0a;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        #success-msg {
+            color: #86efac;
+            background: #052e16;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 12px;
+            display: none;
+            font-size: 0.9rem;
+        }
+
+        .results-card {
+            background: #242424;
+            border-radius: 6px;
+            padding: 20px;
+        }
+
+        #results-container {
+            margin-top: 10px;
+        }
+
+        .placeholder-msg {
+            color: #555;
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+        }
+
+        .result-route {
+            background: #1a1a1a;
+            border-left: 3px solid #2563eb;
+            padding: 12px 14px;
+            border-radius: 0 4px 4px 0;
+            margin-bottom: 12px;
+        }
+
+        .route-title {
+            font-weight: 700;
+            color: #93c5fd;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .route-path {
+            color: #ccc;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .route-node {
+            background: #2d2d2d;
+            padding: 2px 7px;
+            border-radius: 3px;
+        }
+
+        .route-node.depot {
+            background: #1e3a5f;
+            color: #93c5fd;
+        }
+
+        .route-arrow {
+            color: #555;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #444;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="top-bar">
+        <a href="/" class="nav-link">← Volver al Dashboard</a>
+    </div>
+
+    <h1>VRP Voraz</h1>
+
+    <div class="container">
+        <!-- Columna izquierda -->
+        <div>
+            <!-- Configuración General -->
+            <div class="card">
+                <h2>Configuración General</h2>
+                <div id="error-msg"></div>
+
+                <div class="form-group">
+                    <label for="almacen">Almacén Central (Depósito)</label>
+                    <select id="almacen" onchange="updateDemands()">
+                        {% for city in cities %}
+                        <option value="{{ city }}" {% if city=='CDMX' %}selected{% endif %}>{{ city }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="max-carga">Capacidad Máxima del Vehículo</label>
+                    <input type="number" id="max-carga" value="50" min="10" step="5">
+                </div>
+
+                <h2 style="font-size: 1rem; margin-top: 20px;">Pedidos (Demanda de Clientes)</h2>
+                <div class="demand-list" id="demands-container">
+                    <!-- Se llena con JS -->
+                </div>
+
+                <div class="grid-2">
+                    <button class="btn-primary" onclick="solve()">Calcular Rutas</button>
+                    <button class="btn-danger" onclick="clearResults()">Limpiar</button>
+                </div>
+            </div>
+
+            <!-- Agregar ciudad -->
+            <div class="card">
+                <h2>Agregar Nueva Ciudad / Ruta</h2>
+                <div id="success-msg"></div>
+
+                <div class="form-group">
+                    <label>Nombre de la Ciudad</label>
+                    <input type="text" id="new-city-name" placeholder="Ej: Toluca">
+                </div>
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label>Latitud</label>
+                        <input type="number" id="new-city-lat" step="0.000001" placeholder="Ej: 19.2826">
+                    </div>
+                    <div class="form-group">
+                        <label>Longitud</label>
+                        <input type="number" id="new-city-lon" step="0.000001" placeholder="Ej: -99.6556">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Demanda (Peso Inicial)</label>
+                    <input type="number" id="new-city-demand" value="15">
+                </div>
+                <div class="grid-2">
+                    <button onclick="addNewCity()">Guardar Ciudad</button>
+                    <button class="btn-green" onclick="addRandomCity()">Ciudad Aleatoria</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna derecha: Resultados -->
+        <div class="results-card">
+            <h2>Resultados</h2>
+            <div id="results-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let allCities = {{ cities| tojson }};
+        let customDemands = {};
+
+        function updateDemands() {
+            const almacen = document.getElementById('almacen').value;
+            const container = document.getElementById('demands-container');
+            container.innerHTML = '';
+
+            allCities.forEach(city => {
+                if (city !== almacen) {
+                    const div = document.createElement('div');
+                    div.className = 'demand-item';
+
+                    const label = document.createElement('span');
+                    label.textContent = city;
+
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '1';
+
+                    if (customDemands[city]) {
+                        input.value = customDemands[city];
+                    } else {
+                        input.value = Math.floor(Math.random() * 15) + 5;
+                        customDemands[city] = parseInt(input.value);
+                    }
+                    input.id = `demand-${city}`;
+
+                    input.addEventListener('change', (e) => {
+                        customDemands[city] = parseInt(e.target.value) || 0;
+                    });
+
+                    div.appendChild(label);
+                    div.appendChild(input);
+                    container.appendChild(div);
+                }
+            });
+        }
+
+        updateDemands();
+
+        function clearResults() {
+            document.getElementById('error-msg').style.display = 'none';
+            document.getElementById('results-container').innerHTML = '';
+        }
+
+        function addRandomCity() {
+            const pool = [
+                { name: "Guadalajara", lat: 20.671956, lon: -103.348822 },
+                { name: "Puebla", lat: 19.04144, lon: -98.20627 },
+                { name: "Veracruz", lat: 19.173773, lon: -96.134224 },
+                { name: "Cancun", lat: 21.161908, lon: -86.851528 },
+                { name: "Merida", lat: 20.96737, lon: -89.59258 },
+                { name: "Oaxaca", lat: 17.073184, lon: -96.726589 },
+                { name: "Acapulco", lat: 16.853109, lon: -99.823653 },
+                { name: "Mazatlan", lat: 23.249414, lon: -106.411141 },
+                { name: "Chihuahua", lat: 28.632996, lon: -106.0691 },
+                { name: "Hermosillo", lat: 29.072967, lon: -110.955919 },
+                { name: "Leon", lat: 21.12186, lon: -101.682508 },
+                { name: "Morelia", lat: 19.70078, lon: -101.18443 },
+                { name: "Culiacan", lat: 24.80536, lon: -107.39441 },
+                { name: "Saltillo", lat: 25.43833, lon: -100.97368 },
+                { name: "Durango", lat: 24.02772, lon: -104.65318 },
+                { name: "Tepic", lat: 21.50393, lon: -104.89459 },
+                { name: "Colima", lat: 19.24333, lon: -103.725 },
+                { name: "Campeche", lat: 19.83013, lon: -90.53491 },
+                { name: "Zacatecas", lat: 22.77087, lon: -102.58325 },
+                { name: "Villahermosa", lat: 17.98689, lon: -92.93028 }
+            ];
+
+            const available = pool.filter(c => !allCities.includes(c.name));
+            let chosen;
+            if (available.length > 0) {
+                chosen = available[Math.floor(Math.random() * available.length)];
+            } else {
+                const num = allCities.length + 1;
+                chosen = {
+                    name: `CiudadAleatoria_${num}`,
+                    lat: parseFloat((Math.random() * 15 + 16).toFixed(6)),
+                    lon: parseFloat((Math.random() * (-25) - 90).toFixed(6))
+                };
+            }
+
+            document.getElementById('new-city-name').value = chosen.name;
+            document.getElementById('new-city-lat').value = chosen.lat;
+            document.getElementById('new-city-lon').value = chosen.lon;
+            document.getElementById('new-city-demand').value = Math.floor(Math.random() * 15) + 5;
+
+            const successMsg = document.getElementById('success-msg');
+            successMsg.textContent = `Datos de ${chosen.name} generados. Guarda si deseas agregarlo.`;
+            successMsg.style.display = 'block';
+            setTimeout(() => successMsg.style.display = 'none', 3000);
+        }
+
+        async function addNewCity() {
+            const name = document.getElementById('new-city-name').value.trim();
+            const lat = document.getElementById('new-city-lat').value;
+            const lon = document.getElementById('new-city-lon').value;
+            const demand = document.getElementById('new-city-demand').value;
+
+            const successMsg = document.getElementById('success-msg');
+            successMsg.style.display = 'none';
+
+            if (!name || !lat || !lon) {
+                alert("Por favor completa el nombre y las coordenadas.");
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/add_city_coord', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, lat, lon })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    allCities = data.cities;
+                    customDemands[data.added] = parseInt(demand) || 15;
+
+                    const almacenSelect = document.getElementById('almacen');
+                    const currentValue = almacenSelect.value;
+                    almacenSelect.innerHTML = '';
+                    allCities.forEach(c => {
+                        const opt = document.createElement('option');
+                        opt.value = c;
+                        opt.textContent = c;
+                        if (c === currentValue) opt.selected = true;
+                        almacenSelect.appendChild(opt);
+                    });
+
+                    updateDemands();
+
+                    document.getElementById('new-city-name').value = '';
+                    document.getElementById('new-city-lat').value = '';
+                    document.getElementById('new-city-lon').value = '';
+
+                    successMsg.textContent = `Ciudad ${data.added} añadida con éxito.`;
+                    successMsg.style.display = 'block';
+                    setTimeout(() => successMsg.style.display = 'none', 3000);
+                } else {
+                    alert(data.error || 'Error al añadir ciudad');
+                }
+            } catch (err) {
+                alert('Error de conexión.');
+            }
+        }
+
+        async function solve() {
+            const almacen = document.getElementById('almacen').value;
+            const maxCarga = parseInt(document.getElementById('max-carga').value);
+            const errorMsg = document.getElementById('error-msg');
+            const resultsContainer = document.getElementById('results-container');
+
+            errorMsg.style.display = 'none';
+            resultsContainer.innerHTML = '<p style="color:#888;text-align:center;margin-top:40px;">Calculando...</p>';
+
+            const pedidos = {};
+            allCities.forEach(city => {
+                if (city !== almacen) {
+                    const input = document.getElementById(`demand-${city}`);
+                    if (input) {
+                        pedidos[city] = parseInt(input.value) || 0;
+                    }
+                }
+            });
+
+            try {
+                const response = await fetch('/api/solve_brp_voraz', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ almacen, max_carga: maxCarga, pedidos })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    renderRoutes(data.rutas, almacen);
+                } else {
+                    showError(data.error || 'Error desconocido del servidor.');
+                }
+            } catch (err) {
+                showError('Error de conexión con el servidor: ' + err.message);
+            }
+        }
+
+        function renderRoutes(rutas, almacen) {
+            const container = document.getElementById('results-container');
+            container.innerHTML = '<div style="color:#aaa;margin-bottom:12px;font-size:0.9rem;"><strong>Rutas calculadas:</strong></div>';
+
+            if (!rutas || rutas.length === 0) {
+                container.innerHTML += '<p style="color:#888;font-size:0.9rem;">No se encontraron rutas. Verifica la capacidad o los pedidos.</p>';
+                return;
+            }
+
+            rutas.forEach((ruta, index) => {
+                const div = document.createElement('div');
+                div.className = 'result-route';
+
+                const title = document.createElement('div');
+                title.className = 'route-title';
+                title.textContent = `Vehículo ${index + 1}`;
+                div.appendChild(title);
+
+                const path = document.createElement('div');
+                path.className = 'route-path';
+
+                path.innerHTML += `<span class="route-node depot">${almacen}</span>`;
+                ruta.forEach(node => {
+                    path.innerHTML += `<span class="route-arrow">→</span>`;
+                    path.innerHTML += `<span class="route-node">${node}</span>`;
+                });
+                path.innerHTML += `<span class="route-arrow">→</span>`;
+                path.innerHTML += `<span class="route-node depot">${almacen}</span>`;
+
+                div.appendChild(path);
+                container.appendChild(div);
+            });
+        }
+
+        function showError(msg) {
+            const errorMsg = document.getElementById('error-msg');
+            const resultsContainer = document.getElementById('results-container');
+            errorMsg.textContent = msg;
+            errorMsg.style.display = 'block';
+            resultsContainer.innerHTML = '<p style="color:#fca5a5;text-align:center;margin-top:30px;font-size:0.9rem;">Ocurrió un error.</p>';
+        }
+    </script>
+</body>
+
+</html>

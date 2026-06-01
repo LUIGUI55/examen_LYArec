@@ -13,6 +13,8 @@ import Carretera_UCS
 import Carretera_Astar
 from dfs_backtraking import buscar_mejor_valor_backtracking
 from arbol import Nodo
+from SeleccionRuedas_Astar import resolver_seleccion_ruedas
+from BRP_boraz import vrp_voraz
 
 app = Flask(__name__)
 
@@ -203,6 +205,23 @@ def add_location():
         cities = sorted(list(all_cities))
         
     return jsonify({'success': True, 'cities': cities})
+
+@app.route('/api/add_city_coord', methods=['POST'])
+def add_city_coord():
+    data = request.json
+    name = data.get('name', '').strip()
+    try:
+        lat = float(data.get('lat'))
+        lon = float(data.get('lon'))
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Coordenadas inválidas.', 'success': False}), 400
+    if not name:
+        return jsonify({'error': 'Falta el nombre.', 'success': False}), 400
+    
+    # Preservar mayúsculas iniciales como lo hace la lógica de la app
+    name_astar = name[0].upper() + name[1:] if len(name) > 0 else name
+    Carretera_Astar.coord[name_astar] = (lat, lon)
+    return jsonify({'success': True, 'cities': sorted(list(Carretera_Astar.coord.keys())), 'added': name_astar})
 
 import random
 
@@ -626,6 +645,54 @@ def solve_parallel():
     total_elapsed = round((time.perf_counter() - total_start) * 1000, 3)
     return jsonify({'success': True, 'results': results, 'total_time_ms': total_elapsed})
 
+@app.route('/seleccion-ruedas')
+def seleccion_ruedas():
+    return render_template('seleccion_ruedas.html')
+
+@app.route('/api/solve_seleccion_ruedas', methods=['POST'])
+def solve_seleccion_ruedas_api():
+    try:
+        data = request.json or {}
+        matrix = data.get('matrix')
+        
+        # Si se pasa una matriz personalizada, convertir valores a enteros
+        if matrix:
+            formatted_matrix = {}
+            for company, wheels_dict in matrix.items():
+                formatted_matrix[company] = {}
+                for wheel, price in wheels_dict.items():
+                    formatted_matrix[company][wheel] = int(price)
+        else:
+            formatted_matrix = None
+            
+        resultado = resolver_seleccion_ruedas(formatted_matrix)
+        return jsonify(resultado)
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False}), 400
+
+@app.route('/brp-voraz')
+def brp_voraz_view():
+    ciudades = sorted(list(Carretera_Astar.coord.keys()))
+    return render_template('brp_boraz.html', cities=ciudades)
+
+@app.route('/api/solve_brp_voraz', methods=['POST'])
+def solve_brp_voraz():
+    data = request.json
+    almacen = data.get('almacen')
+    max_carga = data.get('max_carga')
+    pedidos = data.get('pedidos')
+    
+    if not almacen or not max_carga or not pedidos:
+        return jsonify({'error': 'Faltan parámetros', 'success': False}), 400
+        
+    try:
+        max_carga = int(max_carga)
+        rutas, pasos = vrp_voraz(pedidos, almacen, max_carga)
+        return jsonify({'success': True, 'rutas': rutas, 'pasos': pasos})
+    except Exception as e:
+        return jsonify({'error': str(e), 'success': False})
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=True)
+
